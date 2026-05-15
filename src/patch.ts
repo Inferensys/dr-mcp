@@ -119,7 +119,7 @@ export async function applyPatchPlan(plan: PatchPlan, configs: ConfigFile[]): Pr
     if (!changed) continue;
     const nextText = serializeConfig(nextDocument, config.format);
     if (nextText === rawText) continue;
-    const backupPath = await createBackup(filePath, `mcp-doctor-${stamp}`);
+    const backupPath = await createBackup(filePath, `dr-mcp-${stamp}`);
     await writeTextWithDirs(filePath, nextText);
     result.backups.push(backupPath);
     result.changedFiles.push(filePath);

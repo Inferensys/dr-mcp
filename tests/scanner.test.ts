@@ -9,7 +9,7 @@ import type { NormalizedServer } from "../src/types.js";
 const fixture = path.resolve("tests/fixtures/mixed");
 const codingToolsFixture = path.resolve("tests/fixtures/coding-tools");
 
-describe("MCP Doctor scanner", () => {
+describe("dr-mcp scanner", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -38,7 +38,7 @@ describe("MCP Doctor scanner", () => {
 
   it("exports markdown and html reports", async () => {
     const report = await scanMcpSetup({ workspace: fixture, includeGlobal: false });
-    expect(renderReport(report, "markdown")).toContain("# MCP Doctor Report");
+    expect(renderReport(report, "markdown")).toContain("# dr-mcp Report");
     expect(renderReport(report, "markdown")).toContain("## Context Weight");
     expect(renderReport(report, "html")).toContain("<!doctype html>");
   });
@@ -160,7 +160,7 @@ describe("MCP Doctor scanner", () => {
   });
 
   it("tracks long-lived installs only when usage tracking is enabled", async () => {
-    const dir = await mkdtemp(path.join(os.tmpdir(), "mcp-doctor-usage-"));
+    const dir = await mkdtemp(path.join(os.tmpdir(), "dr-mcp-usage-"));
     await cp(fixture, dir, { recursive: true });
     const ledgerPath = path.join(dir, "usage-ledger.json");
     await scanMcpSetup({ workspace: dir, includeGlobal: false, trackUsage: true, usageLedgerPath: ledgerPath });
@@ -182,7 +182,7 @@ describe("MCP Doctor scanner", () => {
   });
 
   it("applies duplicate-removal patch plans with backups and idempotence", async () => {
-    const dir = await mkdtemp(path.join(os.tmpdir(), "mcp-doctor-"));
+    const dir = await mkdtemp(path.join(os.tmpdir(), "dr-mcp-"));
     await cp(fixture, dir, { recursive: true });
     const firstReport = await scanMcpSetup({ workspace: dir, includeGlobal: false });
     const plan = firstReport.patchPlans.find((item) => item.id === "remove-duplicate-servers");

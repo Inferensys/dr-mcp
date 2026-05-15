@@ -105,7 +105,7 @@ function signalFor(server: NormalizedServer, entry: UsageEntry | undefined, trac
 function usageLedgerPath(options: ScanOptions): string {
   if (options.usageLedgerPath) return path.resolve(options.usageLedgerPath);
   const homeDir = options.homeDir || os.homedir();
-  return path.join(homeDir, ".mcp-doctor", "usage-ledger.json");
+  return path.join(homeDir, ".dr-mcp", "usage-ledger.json");
 }
 
 async function readUsageLedger(filePath: string): Promise<UsageLedger> {

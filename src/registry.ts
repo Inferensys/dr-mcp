@@ -160,7 +160,7 @@ async function checkRepositoryActivity(repositoryUrl: string): Promise<Repositor
     const response = await fetch(`https://api.github.com/repos/${github.owner}/${github.repo}`, {
       headers: {
         accept: "application/vnd.github+json",
-        "user-agent": "mcp-doctor"
+        "user-agent": "dr-mcp"
       }
     });
     if (!response.ok) {

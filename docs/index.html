@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MCP Doctor</title>
+  <title>dr-mcp</title>
   <meta name="description" content="Clean your MCPs. Audit, clean, and slim down your coding agent's MCP setup.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <style>
@@ -398,13 +398,13 @@
     <nav class="nav" aria-label="Primary">
       <a class="brand" href="#">
         <span class="mark">+</span>
-        <span>MCP Doctor</span>
+        <span>dr-mcp</span>
       </a>
       <div class="nav-links">
         <a href="#why">Cleanup</a>
         <a href="#catches">Finds</a>
         <a href="#install">Install</a>
-        <a href="https://github.com/Inferensys/mcp-doctor">GitHub</a>
+        <a href="https://github.com/Inferensys/dr-mcp">GitHub</a>
       </div>
     </nav>
   </header>
@@ -418,15 +418,15 @@
           <div class="install-copy" aria-label="Install command">
             <div class="install-copy-header">
               <span>One command local scan</span>
-              <button class="copy-button" type="button" data-copy="npx @inferensys/mcp-doctor">Copy</button>
+              <button class="copy-button" type="button" data-copy="npx @inferensys/dr-mcp">Copy</button>
             </div>
-            <pre class="copy-command">npx @inferensys/mcp-doctor</pre>
+            <pre class="copy-command">npx @inferensys/dr-mcp</pre>
           </div>
         </div>
-        <div class="terminal" aria-label="MCP Doctor report preview">
+        <div class="terminal" aria-label="dr-mcp report preview">
           <div class="terminal-bar">
             <div class="dots"><span></span><span></span><span></span></div>
-            <span>mcp-doctor cleanup</span>
+            <span>dr-mcp cleanup</span>
           </div>
           <pre><span class="ok">MCP cleanup report</span>
 
@@ -472,7 +472,7 @@ Patch plans:
 
     <section class="section" id="coverage">
       <h2>Scans the configs agentic coders actually collect.</h2>
-      <p>MCP Doctor puts your global Claude setup, Codex TOML, Cursor project config, VS Code settings, and random <code>.mcp.json</code> files into one cleanup report.</p>
+      <p>dr-mcp puts your global Claude setup, Codex TOML, Cursor project config, VS Code settings, and random <code>.mcp.json</code> files into one cleanup report.</p>
       <div class="tool-grid">
         <div class="tool">Claude Desktop <span>json</span></div>
         <div class="tool">Claude Code / cc <span>json</span></div>
@@ -510,25 +510,25 @@ Patch plans:
     <section class="section" id="install">
       <h2>Start with one scan. Delete nothing until you approve it.</h2>
       <div class="install">
-        <p>The first command gives you a redacted local cleanup report. <code>cleanup</code> adds package checks, abandoned repo signals, major upgrade checks, and local install-history tracking. If you want changes, MCP Doctor creates named patch plans with backups.</p>
+        <p>The first command gives you a redacted local cleanup report. <code>cleanup</code> adds package checks, abandoned repo signals, major upgrade checks, and local install-history tracking. If you want changes, dr-mcp creates named patch plans with backups.</p>
         <pre># CLI
-npx @inferensys/mcp-doctor
-npx @inferensys/mcp-doctor cleanup
-npx @inferensys/mcp-doctor report --format html
+npx @inferensys/dr-mcp
+npx @inferensys/dr-mcp cleanup
+npx @inferensys/dr-mcp report --format html
 
 # Codex / Claude Code MCP server
-npx @inferensys/mcp-doctor server
+npx @inferensys/dr-mcp server
 
-codex mcp add mcp-doctor -- \
-  npx -y @inferensys/mcp-doctor server
+codex mcp add dr-mcp -- \
+  npx -y @inferensys/dr-mcp server
 
-claude mcp add mcp-doctor -- \
-  npx -y @inferensys/mcp-doctor server
+claude mcp add dr-mcp -- \
+  npx -y @inferensys/dr-mcp server
 
 # In your agent session
-doctor_scan
-doctor_cleanup
-/doctor scan</pre>
+dr_mcp_scan
+dr_mcp_cleanup
+/dr-mcp scan</pre>
       </div>
     </section>
   </main>
@@ -536,7 +536,7 @@ doctor_cleanup
   <footer>
     <div class="section">
       <span>MIT License. Local-first. Redacted by default.</span>
-      <span>Registry: io.github.Inferensys/mcp-doctor</span>
+      <span>Registry: io.github.Inferensys/dr-mcp</span>
     </div>
   </footer>
   <script>

@@ -108,20 +108,6 @@ function normalizeCommand(
   positionals: string[]
 ): CliArgs {
   if (!command) return { command, flags, positionals };
-  if (command === "doctor") {
-    const action = positionals[0] || "scan";
-    const rest = positionals.slice(1);
-    if (action === "scan" || action === "audit" || action === "cleanup" || action === "clean") {
-      return { command: "scan", flags: withCleanupDefaults(flags), positionals: rest };
-    }
-    if (action === "report") {
-      return { command: "report", flags: withCleanupDefaults(flags), positionals: rest };
-    }
-    if (action === "patch") {
-      return { command: "patch", flags, positionals: rest };
-    }
-    return { command: action, flags, positionals: rest };
-  }
   if (command === "cleanup" || command === "clean") {
     return { command: "scan", flags: withCleanupDefaults(flags), positionals };
   }
@@ -160,29 +146,29 @@ function parseReportFormat(value: string): ReportFormat {
 }
 
 function printHelp(): void {
-  process.stdout.write(`MCP Doctor - clean your MCPs
+  process.stdout.write(`dr-mcp - clean your MCPs
 
 Usage:
-  mcp-doctor [--json] [--workspace <path>]
-  mcp-doctor cleanup [--json] [--workspace <path>] [--local]
-  mcp-doctor doctor scan [--json] [--workspace <path>] [--local]
-  mcp-doctor scan [--json] [--workspace <path>] [--registry] [--track-usage]
-  mcp-doctor report [--format markdown|html|json] [--workspace <path>] [--registry] [--track-usage]
-  mcp-doctor patch --plan <planId> [--apply] [--workspace <path>] [--track-usage]
-  mcp-doctor server
+  dr-mcp [--json] [--workspace <path>]
+  dr-mcp cleanup [--json] [--workspace <path>] [--local]
+  dr-mcp scan [--json] [--workspace <path>] [--registry] [--track-usage]
+  dr-mcp scan --deep [--json] [--workspace <path>] [--local]
+  dr-mcp report [--format markdown|html|json] [--workspace <path>] [--registry] [--track-usage]
+  dr-mcp patch --plan <planId> [--apply] [--workspace <path>] [--track-usage]
+  dr-mcp server
 
 Examples:
-  npx @inferensys/mcp-doctor
-  npx @inferensys/mcp-doctor cleanup
-  npx @inferensys/mcp-doctor doctor scan
-  npx @inferensys/mcp-doctor scan --json --registry
-  npx @inferensys/mcp-doctor patch --plan upgrade-stale-packages
-  npx @inferensys/mcp-doctor patch --plan remove-duplicate-servers --apply
+  npx @inferensys/dr-mcp
+  npx @inferensys/dr-mcp cleanup
+  npx @inferensys/dr-mcp scan --deep
+  npx @inferensys/dr-mcp scan --json --registry
+  npx @inferensys/dr-mcp patch --plan upgrade-stale-packages
+  npx @inferensys/dr-mcp patch --plan remove-duplicate-servers --apply
 
 Notes:
   Default scan is local-only and does not write a usage ledger.
-  cleanup and doctor scan enable package/repo checks plus local install-history tracking.
-  Add --local to cleanup or doctor scan to skip network checks and ledger writes.
+  cleanup and scan --deep enable package/repo checks plus local install-history tracking.
+  Add --local to cleanup or scan --deep to skip network checks and ledger writes.
 `);
 }
 

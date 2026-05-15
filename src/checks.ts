@@ -85,7 +85,7 @@ function parseDiagnostics(configs: ConfigFile[]): Diagnostic[] {
       category: "reliability",
       severity: "high",
       title: "Config file cannot be parsed",
-      message: `${config.label} exists but MCP Doctor could not parse it.`,
+      message: `${config.label} exists but dr-mcp could not parse it.`,
       target: config.target,
       sourceFile: config.filePath,
       evidence: config.parseError
@@ -398,7 +398,7 @@ function usageDiagnostics(usageSignals: UsageSignal[], servers: NormalizedServer
       category: "maintainability",
       severity: "info",
       title: "Long-lived MCP install needs review",
-      message: `MCP Doctor has seen "${signal.serverName}" in ${signal.scanCount} tracked scans across ${signal.daysInstalled} days. If you do not use it, consider removing it.`,
+      message: `dr-mcp has seen "${signal.serverName}" in ${signal.scanCount} tracked scans across ${signal.daysInstalled} days. If you do not use it, consider removing it.`,
       target: signal.target,
       sourceFile: signal.sourceFile,
       serverId: signal.serverId,

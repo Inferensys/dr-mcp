@@ -1,4 +1,4 @@
-# MCP Doctor
+# dr-mcp
 
 Clean your MCPs.
 
@@ -6,10 +6,10 @@ Audit, clean, and slim down the MCP setup your coding agent loads every day.
 
 If you use Claude Code, Codex, Cursor, Windsurf, Copilot, or VS Code across different projects, your MCP configs collect junk fast: old demo servers, duplicate GitHub tools, broad filesystem access, packages nobody maintains, and giant tool lists your agent has to sort through before it can write code.
 
-MCP Doctor scans that mess and shows what to remove.
+dr-mcp scans that mess and shows what to remove.
 
 ```bash
-npx @inferensys/mcp-doctor
+npx @inferensys/dr-mcp
 ```
 
 That starts a local scan in the current project. It does not delete anything. You get a cleanup report, a ranked list of context-heavy MCPs, and reversible patch plans you can apply after review.
@@ -17,10 +17,10 @@ That starts a local scan in the current project. It does not delete anything. Yo
 For the full cleanup scan with package/repo checks and local install-history tracking:
 
 ```bash
-npx @inferensys/mcp-doctor cleanup
+npx @inferensys/dr-mcp cleanup
 ```
 
-Inside Claude Code, Codex, Cursor, Windsurf, GitHub Copilot, or any MCP client that exposes server prompts/tools, use `doctor_scan` or `doctor_cleanup`. If your client maps MCP prompts into slash commands, use `/doctor scan`.
+Inside Claude Code, Codex, Cursor, Windsurf, GitHub Copilot, or any MCP client that exposes server prompts/tools, use `dr_mcp_scan` or `dr_mcp_cleanup`. If your client maps MCP prompts into slash commands, use `/dr-mcp scan`.
 
 ## What It Helps You Fix
 
@@ -37,32 +37,32 @@ Inside Claude Code, Codex, Cursor, Windsurf, GitHub Copilot, or any MCP client t
 
 ```bash
 # Local audit in the current project
-npx @inferensys/mcp-doctor
+npx @inferensys/dr-mcp
 
 # Deeper cleanup report with package/repo checks and local install history
-npx @inferensys/mcp-doctor cleanup
+npx @inferensys/dr-mcp cleanup
 
-# Chat-style alias for agent workflows
-npx @inferensys/mcp-doctor doctor scan
+# Full scan alias for agent workflows
+npx @inferensys/dr-mcp scan --deep
 
 # Local-only cleanup flow with no network checks or usage ledger writes
-npx @inferensys/mcp-doctor cleanup --local
+npx @inferensys/dr-mcp cleanup --local
 
 # JSON for scripts or CI
-npx @inferensys/mcp-doctor scan --workspace . --json --registry
+npx @inferensys/dr-mcp scan --workspace . --json --registry
 
 # Shareable cleanup report
-npx @inferensys/mcp-doctor report --workspace . --format html > mcp-doctor-report.html
+npx @inferensys/dr-mcp report --workspace . --format html > dr-mcp-report.html
 
 # Preview a repair plan
-npx @inferensys/mcp-doctor patch --workspace . --plan remove-duplicate-servers
-npx @inferensys/mcp-doctor patch --workspace . --plan upgrade-stale-packages
+npx @inferensys/dr-mcp patch --workspace . --plan remove-duplicate-servers
+npx @inferensys/dr-mcp patch --workspace . --plan upgrade-stale-packages
 
 # Apply a reviewed repair plan with backups
-npx @inferensys/mcp-doctor patch --workspace . --plan remove-duplicate-servers --apply
+npx @inferensys/dr-mcp patch --workspace . --plan remove-duplicate-servers --apply
 
 # Run as an MCP server
-npx @inferensys/mcp-doctor server
+npx @inferensys/dr-mcp server
 ```
 
 ## Report Sections
@@ -91,32 +91,32 @@ npx @inferensys/mcp-doctor server
 | Zed | Zed user settings, `.zed/settings.json` |
 | Generic MCP | `.mcp.json` |
 
-## Add MCP Doctor To Your Agent
+## Add dr-mcp To Your Agent
 
 Once added, start from the shortest in-session action:
 
 ```text
-doctor_scan
+dr_mcp_scan
 ```
 
 For cleanup candidates, upgrades, abandoned servers, and long-lived installs:
 
 ```text
-doctor_cleanup
+dr_mcp_cleanup
 ```
 
-Clients that expose MCP prompts as slash commands may show these as `doctor_scan`, `doctor_cleanup`, or a prompt such as `/doctor scan`.
+Clients that expose MCP prompts as slash commands may show these as `dr_mcp_scan`, `dr_mcp_cleanup`, or a prompt such as `/dr-mcp scan`.
 
 ### Codex
 
 ```bash
-codex mcp add mcp-doctor -- npx -y @inferensys/mcp-doctor server
+codex mcp add dr-mcp -- npx -y @inferensys/dr-mcp server
 ```
 
 ### Claude Code
 
 ```bash
-claude mcp add mcp-doctor -- npx -y @inferensys/mcp-doctor server
+claude mcp add dr-mcp -- npx -y @inferensys/dr-mcp server
 ```
 
 ### JSON config clients
@@ -126,9 +126,9 @@ Use this for Claude Desktop, Cursor, Windsurf, Cline, Roo Code, VS Code, and Git
 ```json
 {
   "mcpServers": {
-    "mcp-doctor": {
+    "dr-mcp": {
       "command": "npx",
-      "args": ["-y", "@inferensys/mcp-doctor", "server"]
+      "args": ["-y", "@inferensys/dr-mcp", "server"]
     }
   }
 }
@@ -139,10 +139,10 @@ VS Code and GitHub Copilot may use `servers`:
 ```json
 {
   "servers": {
-    "mcp-doctor": {
+    "dr-mcp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@inferensys/mcp-doctor", "server"]
+      "args": ["-y", "@inferensys/dr-mcp", "server"]
     }
   }
 }
@@ -153,9 +153,9 @@ VS Code and GitHub Copilot may use `servers`:
 ```json
 {
   "context_servers": {
-    "mcp-doctor": {
+    "dr-mcp": {
       "command": "npx",
-      "args": ["-y", "@inferensys/mcp-doctor", "server"]
+      "args": ["-y", "@inferensys/dr-mcp", "server"]
     }
   }
 }
@@ -165,20 +165,20 @@ VS Code and GitHub Copilot may use `servers`:
 
 ```yaml
 mcpServers:
-  mcp-doctor:
+  dr-mcp:
     command: npx
     args:
       - -y
-      - @inferensys/mcp-doctor
+      - @inferensys/dr-mcp
       - server
 ```
 
 ## MCP Tools
 
-When running as a server, MCP Doctor exposes:
+When running as a server, dr-mcp exposes:
 
-- `doctor_scan`
-- `doctor_cleanup`
+- `dr_mcp_scan`
+- `dr_mcp_cleanup`
 - `scan_mcp_setup`
 - `explain_issue`
 - `generate_patch_plan`
@@ -187,9 +187,9 @@ When running as a server, MCP Doctor exposes:
 
 ## MCP Prompts
 
-- `doctor` with `action=scan` or `action=cleanup`
-- `doctor_scan`
-- `doctor_cleanup`
+- `dr_mcp` with `action=scan` or `action=cleanup`
+- `dr_mcp_scan`
+- `dr_mcp_cleanup`
 
 ## Safety
 
@@ -197,9 +197,9 @@ Scans never edit MCP client configs.
 
 Patch plans create timestamped backups before writing. Reports redact secrets, tokens, emails, home paths, and private GitHub repo URLs.
 
-Usage tracking is opt-in. `--track-usage` writes a local ledger at `~/.mcp-doctor/usage-ledger.json`. It tracks what remains installed across scans; it does not claim true per-tool usage unless a client exposes that data.
+Usage tracking is opt-in. `--track-usage` writes a local ledger at `~/.dr-mcp/usage-ledger.json`. It tracks what remains installed across scans; it does not claim true per-tool usage unless a client exposes that data.
 
-MCP Doctor does not auto-install, uninstall, upgrade packages, or run destructive cleanup.
+dr-mcp does not auto-install, uninstall, upgrade packages, or run destructive cleanup.
 
 ## Development
 
@@ -209,6 +209,6 @@ npm run check
 node dist/cli.js scan --workspace tests/fixtures/mixed --json
 ```
 
-Registry name: `io.github.Inferensys/mcp-doctor`
+Registry name: `io.github.Inferensys/dr-mcp`
 
-Package: `@inferensys/mcp-doctor`
+Package: `@inferensys/dr-mcp`

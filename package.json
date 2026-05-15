@@ -1,11 +1,11 @@
 {
-  "name": "@inferensys/mcp-doctor",
+  "name": "@inferensys/dr-mcp",
   "version": "0.3.0",
   "description": "Clean your MCP setup with config audits, context-weight analysis, abandoned-package checks, usage history, and safe patch plans.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "mcp-doctor": "dist/cli.js"
+    "dr-mcp": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -38,7 +38,7 @@
     "roo-code",
     "continue",
     "zed",
-    "mcp-doctor",
+    "dr-mcp",
     "mcp-audit",
     "context-hygiene",
     "security-audit"
@@ -58,13 +58,13 @@
   "engines": {
     "node": ">=18"
   },
-  "homepage": "https://inferensys.github.io/mcp-doctor/",
+  "homepage": "https://inferensys.github.io/dr-mcp/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Inferensys/mcp-doctor.git"
+    "url": "git+https://github.com/Inferensys/dr-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/Inferensys/mcp-doctor/issues"
+    "url": "https://github.com/Inferensys/dr-mcp/issues"
   },
-  "mcpName": "io.github.Inferensys/mcp-doctor"
+  "mcpName": "io.github.Inferensys/dr-mcp"
 }

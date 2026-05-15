@@ -44,7 +44,7 @@ export function renderReport(report: ScanReport, format: ReportFormat, homeDir =
 export function renderMarkdown(report: ScanReport): string {
   const diagnostics = report.diagnostics;
   return [
-    `# MCP Doctor Report`,
+    `# dr-mcp Report`,
     ``,
     `Generated: ${report.generatedAt}`,
     `Workspace: \`${report.workspace}\``,
@@ -153,7 +153,7 @@ function renderHtml(report: ScanReport): string {
 <html>
 <head>
   <meta charset="utf-8">
-  <title>MCP Doctor Report</title>
+  <title>dr-mcp Report</title>
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 40px; line-height: 1.5; color: #151515; }
     code { background: #f2f2f2; padding: 2px 5px; border-radius: 4px; }

@@ -13,7 +13,7 @@ const workspaceSchema = {
   usageLedgerPath: z.string().optional().describe("Optional path for the local usage ledger.")
 };
 
-const doctorWorkflowSchema = {
+const drMcpWorkflowSchema = {
   workspace: z.string().optional().describe("Workspace path to scan. Defaults to the server process current directory."),
   localOnly: z.boolean().optional().describe("Skip network checks and do not write the local usage ledger."),
   registry: z.boolean().optional().describe("Override live npm/package checks. Defaults to true unless localOnly is true."),
@@ -23,16 +23,16 @@ const doctorWorkflowSchema = {
 
 export async function runMcpServer(): Promise<void> {
   const server = new McpServer({
-    name: "mcp-doctor",
+    name: "dr-mcp",
     version: "0.3.0"
   });
 
   server.tool(
-    "doctor_scan",
+    "dr_mcp_scan",
     "One-step MCP cleanup scan for agent sessions. Checks context weight, stale packages, abandoned repos, duplicates, and safe patch plans.",
-    doctorWorkflowSchema,
+    drMcpWorkflowSchema,
     async (params) => {
-      const report = await scanMcpSetup(doctorScanOptions(params));
+      const report = await scanMcpSetup(drMcpScanOptions(params));
       return jsonContent({
         summary: summarizeForAgent(report),
         report
@@ -41,11 +41,11 @@ export async function runMcpServer(): Promise<void> {
   );
 
   server.tool(
-    "doctor_cleanup",
+    "dr_mcp_cleanup",
     "Scan and return the highest-value MCP cleanup candidates. Does not apply patches.",
-    doctorWorkflowSchema,
+    drMcpWorkflowSchema,
     async (params) => {
-      const report = await scanMcpSetup(doctorScanOptions(params));
+      const report = await scanMcpSetup(drMcpScanOptions(params));
       return jsonContent({
         cleanup: summarizeForAgent(report),
         nextStep: "Preview one patch plan with generate_patch_plan. Apply only after the user explicitly confirms.",
@@ -141,7 +141,7 @@ export async function runMcpServer(): Promise<void> {
 
   server.tool(
     "export_report",
-    "Export a redacted MCP Doctor report as Markdown, HTML, or JSON.",
+    "Export a redacted dr-mcp report as Markdown, HTML, or JSON.",
     {
       ...workspaceSchema,
       format: z.enum(["markdown", "html", "json"]).optional().describe("Report format. Defaults to markdown.")
@@ -160,26 +160,26 @@ export async function runMcpServer(): Promise<void> {
   );
 
   server.prompt(
-    "doctor",
-    "Run MCP Doctor from an agent session. Use action=scan for a report or action=cleanup for removal/upgrade candidates.",
+    "dr_mcp",
+    "Run dr-mcp from an agent session. Use action=scan for a report or action=cleanup for removal/upgrade candidates.",
     {
       action: z.enum(["scan", "cleanup"]).optional().describe("Workflow to run. Defaults to scan."),
       workspace: z.string().optional().describe("Workspace path to scan. Defaults to the current session workspace."),
       localOnly: z.string().optional().describe("Set to true to skip network checks and usage-ledger writes.")
     },
-    (params) => promptContent(buildDoctorPrompt(params.action || "scan", params.workspace, params.localOnly === "true"))
+    (params) => promptContent(buildDrMcpPrompt(params.action || "scan", params.workspace, params.localOnly === "true"))
   );
 
   server.prompt(
-    "doctor_scan",
+    "dr_mcp_scan",
     "Scan this workspace's MCP setup and return a short cleanup report.",
-    () => promptContent(buildDoctorPrompt("scan"))
+    () => promptContent(buildDrMcpPrompt("scan"))
   );
 
   server.prompt(
-    "doctor_cleanup",
+    "dr_mcp_cleanup",
     "Find MCPs to remove, upgrade, or keep out of this project. Does not apply patches.",
-    () => promptContent(buildDoctorPrompt("cleanup"))
+    () => promptContent(buildDrMcpPrompt("cleanup"))
   );
 
   await server.connect(new StdioServerTransport());
@@ -196,7 +196,7 @@ function normalizePlanId(planId: string): string {
   return planId;
 }
 
-function doctorScanOptions(params: {
+function drMcpScanOptions(params: {
   workspace?: string;
   localOnly?: boolean;
   registry?: boolean;
@@ -238,14 +238,14 @@ function summarizeForAgent(report: ScanReport) {
   };
 }
 
-function buildDoctorPrompt(action: "scan" | "cleanup", workspace?: string, localOnly = false): string {
-  const toolName = action === "cleanup" ? "doctor_cleanup" : "doctor_scan";
+function buildDrMcpPrompt(action: "scan" | "cleanup", workspace?: string, localOnly = false): string {
+  const toolName = action === "cleanup" ? "dr_mcp_cleanup" : "dr_mcp_scan";
   const args = [
     workspace ? `workspace: ${JSON.stringify(workspace)}` : undefined,
     localOnly ? "localOnly: true" : undefined
   ].filter(Boolean);
   return [
-    `Run MCP Doctor ${action} for this workspace.`,
+    `Run dr-mcp ${action} for this workspace.`,
     `Call the ${toolName} tool${args.length > 0 ? ` with ${args.join(", ")}` : ""}.`,
     "Give me the score, top cleanup findings, context-heavy MCPs, unmaintained or abandoned MCPs, unused/long-lived installs, major upgrades, and patch plan IDs.",
     "Keep the answer short and practical. Do not apply a patch plan unless I explicitly ask you to apply a named plan."

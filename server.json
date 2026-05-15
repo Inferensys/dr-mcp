@@ -1,19 +1,19 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.Inferensys/mcp-doctor",
-  "title": "MCP Doctor",
+  "name": "io.github.Inferensys/dr-mcp",
+  "title": "dr-mcp",
   "description": "Audits MCP configs, scores risk, and creates reversible repair plans.",
   "version": "0.3.0",
-  "websiteUrl": "https://inferensys.github.io/mcp-doctor/",
+  "websiteUrl": "https://inferensys.github.io/dr-mcp/",
   "repository": {
-    "url": "https://github.com/Inferensys/mcp-doctor",
+    "url": "https://github.com/Inferensys/dr-mcp",
     "source": "github",
     "id": "1239901133"
   },
   "packages": [
     {
       "registryType": "npm",
-      "identifier": "@inferensys/mcp-doctor",
+      "identifier": "@inferensys/dr-mcp",
       "version": "0.3.0",
       "transport": {
         "type": "stdio"
