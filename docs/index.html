@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCP Doctor</title>
+  <meta name="description" content="Roast and repair your MCP setup across Claude, Codex, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, and Zed.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8f5;
+      --ink: #11140f;
+      --muted: #5b6458;
+      --line: #d8ddcf;
+      --panel: #ffffff;
+      --accent: #16705a;
+      --accent-2: #c74f32;
+      --accent-3: #1e4e8c;
+      --code: #172019;
+      --soft: #edf1e7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+
+    a {
+      color: inherit;
+      text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+      text-underline-offset: 4px;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav,
+    .section,
+    .hero-inner {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 68px;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 760;
+      font-size: 18px;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid #a7b29f;
+      border-radius: 8px;
+      background: #e8efe2;
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 620;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid var(--ink);
+      border-radius: 7px;
+      background: var(--ink);
+      color: white;
+      text-decoration: none;
+      font-weight: 720;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .button.secondary {
+      border-color: var(--line);
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .hero {
+      min-height: calc(100vh - 68px);
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(420px, 0.84fr);
+      gap: 60px;
+      align-items: center;
+      padding: 58px 0 74px;
+    }
+
+    h1 {
+      max-width: 780px;
+      margin: 0;
+      font-size: clamp(52px, 7vw, 94px);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 660px;
+      margin: 26px 0 0;
+      color: var(--muted);
+      font-size: 20px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .terminal {
+      overflow: hidden;
+      border: 1px solid #c7cebe;
+      border-radius: 8px;
+      background: var(--code);
+      box-shadow: 0 24px 60px rgba(23, 32, 25, 0.18);
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: #aeb8aa;
+      font: 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #e35f43;
+    }
+
+    .dots span:nth-child(2) {
+      background: #d4a51f;
+    }
+
+    .dots span:nth-child(3) {
+      background: #45a86a;
+    }
+
+    pre {
+      margin: 0;
+      padding: 24px;
+      color: #d7e4d1;
+      font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space: pre-wrap;
+    }
+
+    .score {
+      color: #f0c25b;
+    }
+
+    .high {
+      color: #ff8f75;
+    }
+
+    .ok {
+      color: #80d69b;
+    }
+
+    .section {
+      padding: 72px 0;
+    }
+
+    .section h2 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(34px, 4.8vw, 58px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .section p {
+      max-width: 740px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 32px;
+    }
+
+    .tool {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 56px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.66);
+      font-weight: 700;
+    }
+
+    .tool span {
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 36px;
+    }
+
+    .check {
+      min-height: 190px;
+      padding: 22px;
+      border-top: 3px solid var(--accent);
+      background: var(--panel);
+    }
+
+    .check:nth-child(2) {
+      border-color: var(--accent-2);
+    }
+
+    .check:nth-child(3) {
+      border-color: var(--accent-3);
+    }
+
+    .check h3 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .check p {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .install {
+      display: grid;
+      grid-template-columns: 0.8fr 1fr;
+      gap: 34px;
+      align-items: start;
+      margin-top: 32px;
+    }
+
+    .install pre {
+      border-radius: 8px;
+      background: #11140f;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 34px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer .section {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0;
+    }
+
+    @media (max-width: 860px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .hero-inner,
+      .install {
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+
+      .terminal {
+        max-width: 100%;
+      }
+
+      .tool-grid,
+      .checks {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: clamp(48px, 16vw, 70px);
+      }
+
+      footer .section {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav" aria-label="Primary">
+      <a class="brand" href="#">
+        <span class="mark">+</span>
+        <span>MCP Doctor</span>
+      </a>
+      <div class="nav-links">
+        <a href="#coverage">Coverage</a>
+        <a href="#checks">Checks</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/Inferensys/mcp-doctor">GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <h1>Roast and repair your MCP setup.</h1>
+          <p class="lead">A local-first CLI and MCP server that audits broken configs, risky permissions, unpinned packages, context bloat, and duplicate tools before they slow down your coding agent.</p>
+          <div class="hero-actions">
+            <a class="button" href="https://www.npmjs.com/package/@inferensys/mcp-doctor">Install with npm</a>
+            <a class="button secondary" href="https://github.com/Inferensys/mcp-doctor">View source</a>
+          </div>
+        </div>
+        <div class="terminal" aria-label="MCP Doctor report preview">
+          <div class="terminal-bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <span>mcp-doctor scan --registry</span>
+          </div>
+          <pre><span class="ok">MCP Doctor Report</span>
+
+Overall score: <span class="score">67/100</span>
+Reliability:   70/100
+Security:      60/100
+Context risk:  high
+
+<span class="high">HIGH</span> Broad filesystem access
+<span class="high">HIGH</span> Inline secret environment value
+MED  Duplicate MCP server name
+MED  Unpinned package install
+
+Patch plans:
+  remove-duplicate-servers
+  remove-dead-servers
+  pin-npx-packages</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="coverage">
+      <h2>Built for the MCP configs developers actually have.</h2>
+      <p>MCP Doctor scans local and project configs for the major coding assistants and IDEs, then normalizes every server into one model so duplicate tools, broken launch commands, and risky settings are visible in one report.</p>
+      <div class="tool-grid">
+        <div class="tool">Claude Desktop <span>json</span></div>
+        <div class="tool">Claude Code / cc <span>json</span></div>
+        <div class="tool">OpenAI Codex <span>toml</span></div>
+        <div class="tool">Cursor <span>json</span></div>
+        <div class="tool">Windsurf <span>json</span></div>
+        <div class="tool">GitHub Copilot <span>json</span></div>
+        <div class="tool">VS Code <span>json</span></div>
+        <div class="tool">VS Code Insiders <span>json</span></div>
+        <div class="tool">Cline <span>json</span></div>
+        <div class="tool">Roo Code <span>json</span></div>
+        <div class="tool">Continue <span>yaml</span></div>
+        <div class="tool">Zed <span>json</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="checks">
+      <h2>Scores what usually breaks MCP installs.</h2>
+      <div class="checks">
+        <article class="check">
+          <h3>Reliability</h3>
+          <p>Find parse errors, missing commands, dead local paths, broken environment references, unsupported transports, and stale package metadata.</p>
+        </article>
+        <article class="check">
+          <h3>Security</h3>
+          <p>Flag inline secrets, secret-like args, broad filesystem mounts, private repo leaks, and risky values before a client loads them.</p>
+        </article>
+        <article class="check">
+          <h3>Context Hygiene</h3>
+          <p>Estimate loaded tool count, highlight duplicate servers, and show which configs are adding noise to your agent context.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="install">
+      <h2>Use it as a CLI or as an MCP server.</h2>
+      <div class="install">
+        <p>Run a one-off local scan, export a redacted Markdown or HTML report, or install MCP Doctor into Codex, Claude Code, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, or Zed as a normal stdio MCP server.</p>
+        <pre>npx @inferensys/mcp-doctor scan --workspace .
+npx @inferensys/mcp-doctor report --format html
+npx @inferensys/mcp-doctor server
+
+codex mcp add mcp-doctor -- \
+  npx -y @inferensys/mcp-doctor server</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="section">
+      <span>MIT License. Local-first and redacted by default.</span>
+      <span>Registry: io.github.Inferensys/mcp-doctor</span>
+    </div>
+  </footer>
+</body>
+</html>

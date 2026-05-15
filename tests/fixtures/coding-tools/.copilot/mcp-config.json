@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "copilot-search": {
+      "type": "stdio",
+      "command": "npx @modelcontextprotocol/server-filesystem@latest"
+    }
+  }
+}

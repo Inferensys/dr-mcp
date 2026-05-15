@@ -1,0 +1,6 @@
+[mcp_servers.codex_docs]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+
+[mcp_servers.remote_docs]
+url = "https://example.com/mcp"

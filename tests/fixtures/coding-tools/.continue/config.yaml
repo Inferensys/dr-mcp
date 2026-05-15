@@ -1,0 +1,6 @@
+mcpServers:
+  continue-db:
+    command: npx
+    args:
+      - -y
+      - missing-package

@@ -1,0 +1,66 @@
+{
+  "name": "@inferensys/mcp-doctor",
+  "version": "0.1.0",
+  "description": "Roast and repair your MCP setup across Claude, Codex, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, and Zed.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-doctor": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "server.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "check": "npm run build && npm run test",
+    "prepare": "npm run build",
+    "prepack": "npm run check"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "cursor",
+    "diagnostics",
+    "developer-tools",
+    "mcp-server",
+    "mcp-registry",
+    "codex",
+    "claude-code",
+    "github-copilot",
+    "windsurf",
+    "vscode",
+    "cline",
+    "roo-code",
+    "continue",
+    "zed"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "smol-toml": "^1.6.1",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.8"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://inferensys.github.io/mcp-doctor/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Inferensys/mcp-doctor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Inferensys/mcp-doctor/issues"
+  },
+  "mcpName": "io.github.Inferensys/mcp-doctor"
+}

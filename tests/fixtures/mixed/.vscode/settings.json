@@ -1,0 +1,12 @@
+{
+  // JSONC comments should parse.
+  "mcp": {
+    "servers": {
+      "github": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-github@latest"]
+      },
+      "broken": {}
+    }
+  }
+}

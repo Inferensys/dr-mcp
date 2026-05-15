@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "roo-github": {
+      "command": "npx",
+      "args": ["-y", "@github/github-mcp-server@1.0.0"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  }
+}

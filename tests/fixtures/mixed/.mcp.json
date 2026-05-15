@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "local-script": {
+      "command": "node",
+      "args": ["./missing-server.js"]
+    }
+  }
+}

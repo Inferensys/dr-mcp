@@ -1,0 +1,8 @@
+{
+  "context_servers": {
+    "zed-browser": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@1.0.0"]
+    }
+  }
+}
