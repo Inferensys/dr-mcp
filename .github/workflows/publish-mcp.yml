@@ -25,7 +25,16 @@ jobs:
         run: npm ci
       - name: Check
         run: npm run check
+      - name: Check npm package
+        id: npm-package
+        run: |
+          if npm view "${npm_package_name}@${npm_package_version}" version --registry https://registry.npmjs.org >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish package to npm
+        if: steps.npm-package.outputs.published != 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
