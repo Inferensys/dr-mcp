@@ -19,6 +19,7 @@ It does not delete anything during a scan. You get a cleanup report, a ranked li
 - **Reclaim context.** See which MCPs add the biggest tool lists to your agent's prompt.
 - **Cut unwanted tool calls.** Remove old servers your agent keeps considering even when the project does not need them.
 - **Ditch abandoned MCPs.** With `--registry`, check npm metadata and GitHub activity for archived or stale projects.
+- **See major upgrades.** Find MCP packages pinned far behind npm latest and review upgrade plans.
 - **Find leftovers.** Turn on `--track-usage` and build a local ledger of MCPs that keep showing up across scans.
 - **Remove duplicates.** Spot the same MCP registered in Claude, Cursor, VS Code, Codex, Windsurf, or project files.
 - **Fix risky configs.** Flag broad filesystem access, inline secrets, secret-looking args, missing commands, dead paths, and broken env refs.
@@ -41,6 +42,7 @@ npx @inferensys/mcp-doctor report --workspace . --format html > mcp-doctor-repor
 
 # Preview a repair plan
 npx @inferensys/mcp-doctor patch --workspace . --plan remove-duplicate-servers
+npx @inferensys/mcp-doctor patch --workspace . --plan upgrade-stale-packages
 
 # Apply a reviewed repair plan with backups
 npx @inferensys/mcp-doctor patch --workspace . --plan remove-duplicate-servers --apply
@@ -52,6 +54,7 @@ npx @inferensys/mcp-doctor server
 ## Report Sections
 
 - **Score:** reliability, security, context hygiene, maintainability.
+- **Package upgrades:** MCP package pins behind npm latest, including major upgrades.
 - **Context weight:** MCPs ranked by estimated tool load.
 - **Install history:** long-lived servers from the local usage ledger.
 - **Findings:** concrete issues with source config paths.

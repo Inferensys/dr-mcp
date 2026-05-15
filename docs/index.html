@@ -436,6 +436,10 @@ browser       <span class="bar">█████░░░░░░░</span> 25 t
 slack         <span class="bar">████░░░░░░░░</span> 20 tools
 postgres      <span class="bar">██░░░░░░░░░░</span> 10 tools
 
+Major upgrades
+github-mcp    0.8.1 -> 1.4.0
+browser-mcp   1.2.0 -> 2.0.3
+
 Unmaintained
 <span class="high">ditch</span>  old-docs-mcp      archived repo
 <span class="high">ditch</span>  linear-helper     no push in 421 days
@@ -445,6 +449,7 @@ review figma-mcp        seen 7 scans, 93 days
 review browser          heavy for this repo
 
 Patch plans:
+  upgrade-stale-packages
   remove-abandoned-servers
   remove-long-lived-servers
   remove-heavy-context-servers
@@ -459,7 +464,7 @@ Patch plans:
       <p>One project needs GitHub and Postgres. Another needs Playwright. A third needs a docs server. After a few weeks, your MCP configs look like an old startup disk: useful tools mixed with trial installs, duplicates, stale packages, and permissions you would not add today.</p>
       <ul class="plain-list">
         <li><strong>Audit the whole machine.</strong> Claude, Codex, Cursor, Windsurf, Copilot, VS Code, Cline, Roo Code, Continue, Zed, and project `.mcp.json` files.</li>
-        <li><strong>Clean obvious clutter.</strong> Duplicate servers, dead commands, missing paths, archived repos, and packages stuck on `latest`.</li>
+        <li><strong>Clean obvious clutter.</strong> Duplicate servers, dead commands, missing paths, archived repos, major upgrades, and packages stuck on `latest`.</li>
         <li><strong>Reclaim context.</strong> Rank servers by estimated tool count so heavy MCPs stay out of projects that do not need them.</li>
         <li><strong>Find old installs.</strong> `--track-usage` builds a local ledger of MCPs that keep hanging around scan after scan.</li>
       </ul>
@@ -496,8 +501,8 @@ Patch plans:
           <p>Ranks heavy servers like GitHub, browser automation, Slack, Jira, and filesystem tools by estimated tool load.</p>
         </article>
         <article class="check">
-          <h3>Risky configs</h3>
-          <p>Flags broad filesystem mounts, inline secrets, broken env refs, dead paths, duplicate names, and unpinned packages.</p>
+          <h3>Upgrade debt</h3>
+          <p>Shows MCP packages behind npm latest, including major upgrades that deserve a careful review before applying.</p>
         </article>
       </div>
     </section>

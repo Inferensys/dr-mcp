@@ -73,8 +73,8 @@ describe("MCP Doctor scanner", () => {
     );
     const report = await scanMcpSetup({ workspace: fixture, includeGlobal: false, registry: true });
     expect(report.registryFindings.some((finding) => finding.status === "missing")).toBe(true);
-    const pinPlan = report.patchPlans.find((plan) => plan.id === "pin-npx-packages");
-    expect(pinPlan?.operations.length).toBeGreaterThan(0);
+    const upgradePlan = report.patchPlans.find((plan) => plan.id === "upgrade-stale-packages");
+    expect(upgradePlan?.operations.length).toBeGreaterThan(0);
   });
 
   it("handles registry missing, stale, offline, malformed, and mismatch cases", async () => {
@@ -122,6 +122,7 @@ describe("MCP Doctor scanner", () => {
       "stale",
       "registry-mismatch"
     ]);
+    expect(findings.find((finding) => finding.status === "stale")?.updateType).toBe("major");
   });
 
   it("flags abandoned GitHub repositories from package metadata", async () => {

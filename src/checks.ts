@@ -159,7 +159,7 @@ function staticServerDiagnostics(servers: NormalizedServer[], options: ScanOptio
         sourceFile: server.sourceFile,
         serverId: server.id,
         serverName: server.name,
-        fixPlanId: options.registry ? "pin-npx-packages" : undefined
+        fixPlanId: options.registry ? "upgrade-stale-packages" : undefined
       });
     }
     for (const arg of server.args) {
@@ -281,7 +281,9 @@ function registryDiagnostics(findings: RegistryFinding[], servers: NormalizedSer
             ? "Package missing from npm"
             : finding.status === "registry-mismatch"
               ? "Package MCP name is not listed in the official registry"
-              : "Package is stale",
+              : finding.updateType === "major"
+                ? "Major MCP package upgrade pending"
+                : "MCP package upgrade pending",
         message: finding.message,
         target: server?.target,
         sourceFile: server?.sourceFile,
@@ -289,7 +291,7 @@ function registryDiagnostics(findings: RegistryFinding[], servers: NormalizedSer
         serverName: server?.name,
         fixPlanId:
           finding.status === "stale"
-            ? "pin-npx-packages"
+            ? "upgrade-stale-packages"
             : finding.status === "missing"
               ? "remove-dead-servers"
               : undefined

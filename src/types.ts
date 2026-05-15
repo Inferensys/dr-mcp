@@ -67,6 +67,7 @@ export interface RegistryFinding {
   packageName: string;
   installedVersion?: string;
   latestVersion?: string;
+  updateType?: "major" | "minor" | "patch" | "unknown";
   mcpName?: string;
   repository?: RepositoryActivity;
   status: "ok" | "stale" | "missing" | "unknown" | "registry-mismatch";

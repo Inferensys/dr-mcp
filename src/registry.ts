@@ -72,15 +72,20 @@ export async function checkPackageRegistry(servers: NormalizedServer[]): Promise
       };
     }
     if (server.packageVersion && server.packageVersion !== "latest" && found.latest && server.packageVersion !== found.latest) {
+      const updateType = classifyUpdate(server.packageVersion, found.latest);
       return {
         serverId: server.id,
         packageName,
         installedVersion: server.packageVersion,
         latestVersion: found.latest,
+        updateType,
         mcpName: found.mcpName,
         repository: found.repository,
         status: "stale",
-        message: `Package is pinned to ${server.packageVersion}; latest is ${found.latest}`
+        message:
+          updateType === "major"
+            ? `Major upgrade pending: ${server.packageVersion} -> ${found.latest}`
+            : `Package is pinned to ${server.packageVersion}; latest is ${found.latest}`
       };
     }
     if (found.mcpName && found.officialListed === false) {
@@ -100,6 +105,7 @@ export async function checkPackageRegistry(servers: NormalizedServer[]): Promise
       packageName,
       installedVersion: server.packageVersion,
       latestVersion: found.latest,
+      updateType: "unknown",
       mcpName: found.mcpName,
       repository: found.repository,
       status: "ok",
@@ -234,4 +240,30 @@ function daysSince(date: string): number {
   const time = Date.parse(date);
   if (Number.isNaN(time)) return 0;
   return Math.max(0, Math.floor((Date.now() - time) / 86_400_000));
+}
+
+function classifyUpdate(current: string, latest: string): RegistryFinding["updateType"] {
+  const currentSemver = parseSemver(current);
+  const latestSemver = parseSemver(latest);
+  if (!currentSemver || !latestSemver) return "unknown";
+  if (latestSemver.major > currentSemver.major) return "major";
+  if (latestSemver.major === currentSemver.major && latestSemver.minor > currentSemver.minor) return "minor";
+  if (
+    latestSemver.major === currentSemver.major &&
+    latestSemver.minor === currentSemver.minor &&
+    latestSemver.patch > currentSemver.patch
+  ) {
+    return "patch";
+  }
+  return "unknown";
+}
+
+function parseSemver(value: string): { major: number; minor: number; patch: number } | undefined {
+  const match = value.match(/^v?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/);
+  if (!match) return undefined;
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3])
+  };
 }

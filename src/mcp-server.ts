@@ -15,7 +15,7 @@ const workspaceSchema = {
 export async function runMcpServer(): Promise<void> {
   const server = new McpServer({
     name: "mcp-doctor",
-    version: "0.2.0"
+    version: "0.3.0"
   });
 
   server.tool(
@@ -64,7 +64,7 @@ export async function runMcpServer(): Promise<void> {
     "Generate a reversible patch plan for a scan finding.",
     {
       ...workspaceSchema,
-      planId: z.string().describe("Patch plan ID, such as remove-duplicate-servers or pin-npx-packages.")
+      planId: z.string().describe("Patch plan ID, such as remove-duplicate-servers or upgrade-stale-packages.")
     },
     async (params) => {
       const report = await scanMcpSetup({
@@ -73,7 +73,7 @@ export async function runMcpServer(): Promise<void> {
         trackUsage: params.trackUsage,
         usageLedgerPath: params.usageLedgerPath
       });
-      const plan = report.patchPlans.find((item) => item.id === params.planId);
+      const plan = report.patchPlans.find((item) => item.id === normalizePlanId(params.planId));
       if (!plan) return jsonContent({ error: true, message: `Patch plan not found: ${params.planId}` });
       return jsonContent(plan);
     }
@@ -97,7 +97,7 @@ export async function runMcpServer(): Promise<void> {
         trackUsage: params.trackUsage,
         usageLedgerPath: params.usageLedgerPath
       });
-      const plan = report.patchPlans.find((item) => item.id === params.planId);
+      const plan = report.patchPlans.find((item) => item.id === normalizePlanId(params.planId));
       if (!plan) return jsonContent({ error: true, message: `Patch plan not found: ${params.planId}` });
       return jsonContent(await applyPatchPlan(plan, report.configs));
     }
@@ -130,4 +130,9 @@ function jsonContent(value: unknown) {
   return {
     content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }]
   };
+}
+
+function normalizePlanId(planId: string): string {
+  if (planId === "pin-npx-packages") return "upgrade-stale-packages";
+  return planId;
 }

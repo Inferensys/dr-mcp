@@ -1,6 +1,6 @@
 {
   "name": "@inferensys/mcp-doctor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Roast and repair your MCP setup with abandoned-package, usage-history, context-weight, security, and reliability checks.",
   "type": "module",
   "main": "dist/index.js",

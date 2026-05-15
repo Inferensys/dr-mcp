@@ -37,11 +37,12 @@ async function main(): Promise<void> {
   }
 
   if (command === "patch") {
-    const planId = stringFlag(flags.plan);
-    if (!planId) throw new Error("patch requires --plan <planId>");
+    const requestedPlanId = stringFlag(flags.plan);
+    if (!requestedPlanId) throw new Error("patch requires --plan <planId>");
+    const planId = normalizePlanId(requestedPlanId);
     const report = await scanMcpSetup({
       workspace,
-      registry: registry || planId === "pin-npx-packages" || planId === "remove-abandoned-servers",
+      registry: registry || planId === "upgrade-stale-packages" || planId === "remove-abandoned-servers",
       trackUsage,
       usageLedgerPath
     });
@@ -110,8 +111,14 @@ Examples:
   npx @inferensys/mcp-doctor scan --workspace .
   npx @inferensys/mcp-doctor scan --json --registry
   npx @inferensys/mcp-doctor scan --track-usage
+  npx @inferensys/mcp-doctor patch --plan upgrade-stale-packages
   npx @inferensys/mcp-doctor patch --plan remove-duplicate-servers --apply
 `);
+}
+
+function normalizePlanId(planId: string): string {
+  if (planId === "pin-npx-packages") return "upgrade-stale-packages";
+  return planId;
 }
 
 main().catch((error) => {

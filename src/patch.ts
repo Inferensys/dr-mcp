@@ -35,15 +35,15 @@ export function generatePatchPlans(
     });
   }
 
-  const pinOps = pinPackageOps(servers, registryFindings);
-  if (pinOps.length > 0) {
+  const upgradeOps = upgradePackageOps(servers, registryFindings);
+  if (upgradeOps.length > 0) {
     plans.push({
-      id: "pin-npx-packages",
-      title: "Pin npx package versions",
-      description: "Replaces unpinned or stale npx package references with the latest resolved npm version.",
+      id: "upgrade-stale-packages",
+      title: "Upgrade MCP packages to latest",
+      description: "Updates pinned MCP package references that are behind npm latest. Major upgrades are included, so review before applying.",
       risk: "low",
-      diagnostics: diagnostics.filter((item) => item.fixPlanId === "pin-npx-packages").map((item) => item.id),
-      operations: pinOps
+      diagnostics: diagnostics.filter((item) => item.fixPlanId === "upgrade-stale-packages").map((item) => item.id),
+      operations: upgradeOps
     });
   }
 
@@ -148,7 +148,7 @@ function removeOpsForDiagnostics(planId: string, diagnostics: Diagnostic[], serv
     });
 }
 
-function pinPackageOps(servers: NormalizedServer[], registryFindings: RegistryFinding[]): PatchOperation[] {
+function upgradePackageOps(servers: NormalizedServer[], registryFindings: RegistryFinding[]): PatchOperation[] {
   const latestByPackage = new Map<string, string>();
   for (const finding of registryFindings) {
     if (finding.latestVersion) latestByPackage.set(finding.packageName, finding.latestVersion);
@@ -162,13 +162,13 @@ function pinPackageOps(servers: NormalizedServer[], registryFindings: RegistryFi
     const currentRef = packageRef(server.packageName, server.packageVersion);
     const nextRef = packageRef(server.packageName, latest);
     operations.push({
-      id: `pin-npx:${server.id}`,
+      id: `upgrade-package:${server.id}`,
       filePath: server.sourceFile,
       type: "replace-array-value",
       pointer: [...server.pointer, "args"],
       matchValue: currentRef,
       value: nextRef,
-      description: `Pin "${server.packageName}" to ${latest}`
+      description: `Upgrade "${server.packageName}" from ${server.packageVersion || "unpinned"} to ${latest}`
     });
   }
   return operations;

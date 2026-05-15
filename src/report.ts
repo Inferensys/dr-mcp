@@ -69,6 +69,12 @@ export function renderMarkdown(report: ScanReport): string {
     `- Context-heavy servers: ${report.summary.heavyServerCount}`,
     `- Usage tracking: ${report.usage.trackingEnabled ? `enabled (${report.usage.trackedServerCount} tracked)` : "disabled"}`,
     `- Long-lived install review candidates: ${report.usage.reviewCandidateCount}`,
+    `- Package upgrades pending: ${upgradeFindings(report).length}`,
+    `- Major upgrades pending: ${upgradeFindings(report).filter((finding) => finding.updateType === "major").length}`,
+    ``,
+    `## Package Upgrades`,
+    ``,
+    ...formatUpgrades(report),
     ``,
     `## Context Weight`,
     ``,
@@ -94,6 +100,22 @@ export function renderMarkdown(report: ScanReport): string {
         )),
     ``
   ].join("\n");
+}
+
+function formatUpgrades(report: ScanReport): string[] {
+  if (!report.registryEnabled) return [`Run with \`--registry\` to check npm latest versions and major upgrade gaps.`];
+  const findings = upgradeFindings(report);
+  if (findings.length === 0) return [`No stale MCP package pins found.`];
+  return findings.map((finding) => {
+    const label = finding.updateType === "major" ? "major" : finding.updateType || "unknown";
+    return `- **${finding.packageName}**: ${finding.installedVersion} -> ${finding.latestVersion} (${label}).`;
+  });
+}
+
+function upgradeFindings(report: ScanReport) {
+  return report.registryFindings.filter(
+    (finding) => finding.status === "stale" && finding.installedVersion && finding.latestVersion
+  );
 }
 
 function formatContextWeights(report: ScanReport): string[] {
