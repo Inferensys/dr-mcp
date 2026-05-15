@@ -9,10 +9,18 @@ If you use Claude Code, Codex, Cursor, Windsurf, Copilot, or VS Code across diff
 MCP Doctor scans that mess and shows what to remove.
 
 ```bash
-npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage
+npx @inferensys/mcp-doctor
 ```
 
-It does not delete anything during a scan. You get a cleanup report, a ranked list of context-heavy MCPs, and reversible patch plans you can apply after review.
+That starts a local scan in the current project. It does not delete anything. You get a cleanup report, a ranked list of context-heavy MCPs, and reversible patch plans you can apply after review.
+
+For the full cleanup scan with package/repo checks and local install-history tracking:
+
+```bash
+npx @inferensys/mcp-doctor cleanup
+```
+
+Inside Claude Code, Codex, Cursor, Windsurf, GitHub Copilot, or any MCP client that exposes server prompts/tools, use `doctor_scan` or `doctor_cleanup`. If your client maps MCP prompts into slash commands, use `/doctor scan`.
 
 ## What It Helps You Fix
 
@@ -28,11 +36,17 @@ It does not delete anything during a scan. You get a cleanup report, a ranked li
 ## Commands
 
 ```bash
-# Human-readable audit
-npx @inferensys/mcp-doctor scan --workspace .
+# Local audit in the current project
+npx @inferensys/mcp-doctor
 
 # Deeper cleanup report with package/repo checks and local install history
-npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage
+npx @inferensys/mcp-doctor cleanup
+
+# Chat-style alias for agent workflows
+npx @inferensys/mcp-doctor doctor scan
+
+# Local-only cleanup flow with no network checks or usage ledger writes
+npx @inferensys/mcp-doctor cleanup --local
 
 # JSON for scripts or CI
 npx @inferensys/mcp-doctor scan --workspace . --json --registry
@@ -78,6 +92,20 @@ npx @inferensys/mcp-doctor server
 | Generic MCP | `.mcp.json` |
 
 ## Add MCP Doctor To Your Agent
+
+Once added, start from the shortest in-session action:
+
+```text
+doctor_scan
+```
+
+For cleanup candidates, upgrades, abandoned servers, and long-lived installs:
+
+```text
+doctor_cleanup
+```
+
+Clients that expose MCP prompts as slash commands may show these as `doctor_scan`, `doctor_cleanup`, or a prompt such as `/doctor scan`.
 
 ### Codex
 
@@ -149,11 +177,19 @@ mcpServers:
 
 When running as a server, MCP Doctor exposes:
 
+- `doctor_scan`
+- `doctor_cleanup`
 - `scan_mcp_setup`
 - `explain_issue`
 - `generate_patch_plan`
 - `apply_patch_plan`
 - `export_report`
+
+## MCP Prompts
+
+- `doctor` with `action=scan` or `action=cleanup`
+- `doctor_scan`
+- `doctor_cleanup`
 
 ## Safety
 

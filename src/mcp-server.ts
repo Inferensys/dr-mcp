@@ -4,6 +4,7 @@ import { z } from "zod";
 import { scanMcpSetup } from "./scanner.js";
 import { applyPatchPlan } from "./patch.js";
 import { renderReport } from "./report.js";
+import type { ScanOptions, ScanReport } from "./types.js";
 
 const workspaceSchema = {
   workspace: z.string().optional().describe("Workspace path to scan. Defaults to the server process current directory."),
@@ -12,11 +13,46 @@ const workspaceSchema = {
   usageLedgerPath: z.string().optional().describe("Optional path for the local usage ledger.")
 };
 
+const doctorWorkflowSchema = {
+  workspace: z.string().optional().describe("Workspace path to scan. Defaults to the server process current directory."),
+  localOnly: z.boolean().optional().describe("Skip network checks and do not write the local usage ledger."),
+  registry: z.boolean().optional().describe("Override live npm/package checks. Defaults to true unless localOnly is true."),
+  trackUsage: z.boolean().optional().describe("Override local install-history tracking. Defaults to true unless localOnly is true."),
+  usageLedgerPath: z.string().optional().describe("Optional path for the local usage ledger.")
+};
+
 export async function runMcpServer(): Promise<void> {
   const server = new McpServer({
     name: "mcp-doctor",
     version: "0.3.0"
   });
+
+  server.tool(
+    "doctor_scan",
+    "One-step MCP cleanup scan for agent sessions. Checks context weight, stale packages, abandoned repos, duplicates, and safe patch plans.",
+    doctorWorkflowSchema,
+    async (params) => {
+      const report = await scanMcpSetup(doctorScanOptions(params));
+      return jsonContent({
+        summary: summarizeForAgent(report),
+        report
+      });
+    }
+  );
+
+  server.tool(
+    "doctor_cleanup",
+    "Scan and return the highest-value MCP cleanup candidates. Does not apply patches.",
+    doctorWorkflowSchema,
+    async (params) => {
+      const report = await scanMcpSetup(doctorScanOptions(params));
+      return jsonContent({
+        cleanup: summarizeForAgent(report),
+        nextStep: "Preview one patch plan with generate_patch_plan. Apply only after the user explicitly confirms.",
+        report
+      });
+    }
+  );
 
   server.tool(
     "scan_mcp_setup",
@@ -123,6 +159,29 @@ export async function runMcpServer(): Promise<void> {
     }
   );
 
+  server.prompt(
+    "doctor",
+    "Run MCP Doctor from an agent session. Use action=scan for a report or action=cleanup for removal/upgrade candidates.",
+    {
+      action: z.enum(["scan", "cleanup"]).optional().describe("Workflow to run. Defaults to scan."),
+      workspace: z.string().optional().describe("Workspace path to scan. Defaults to the current session workspace."),
+      localOnly: z.string().optional().describe("Set to true to skip network checks and usage-ledger writes.")
+    },
+    (params) => promptContent(buildDoctorPrompt(params.action || "scan", params.workspace, params.localOnly === "true"))
+  );
+
+  server.prompt(
+    "doctor_scan",
+    "Scan this workspace's MCP setup and return a short cleanup report.",
+    () => promptContent(buildDoctorPrompt("scan"))
+  );
+
+  server.prompt(
+    "doctor_cleanup",
+    "Find MCPs to remove, upgrade, or keep out of this project. Does not apply patches.",
+    () => promptContent(buildDoctorPrompt("cleanup"))
+  );
+
   await server.connect(new StdioServerTransport());
 }
 
@@ -135,4 +194,71 @@ function jsonContent(value: unknown) {
 function normalizePlanId(planId: string): string {
   if (planId === "pin-npx-packages") return "upgrade-stale-packages";
   return planId;
+}
+
+function doctorScanOptions(params: {
+  workspace?: string;
+  localOnly?: boolean;
+  registry?: boolean;
+  trackUsage?: boolean;
+  usageLedgerPath?: string;
+}): Partial<ScanOptions> {
+  const localOnly = params.localOnly === true;
+  return {
+    workspace: params.workspace,
+    registry: localOnly ? false : params.registry ?? true,
+    trackUsage: localOnly ? false : params.trackUsage ?? true,
+    usageLedgerPath: params.usageLedgerPath
+  };
+}
+
+function summarizeForAgent(report: ScanReport) {
+  return {
+    score: report.score,
+    totals: report.summary,
+    topContextServers: report.contextWeights.slice(0, 6).map((item) => ({
+      serverName: item.serverName,
+      estimatedToolCount: item.estimatedToolCount,
+      weight: item.weight,
+      reasons: item.reasons
+    })),
+    cleanupFindings: report.diagnostics.slice(0, 12).map((diagnostic) => ({
+      id: diagnostic.id,
+      severity: diagnostic.severity,
+      title: diagnostic.title,
+      serverName: diagnostic.serverName,
+      fixPlanId: diagnostic.fixPlanId
+    })),
+    patchPlans: report.patchPlans.map((plan) => ({
+      id: plan.id,
+      title: plan.title,
+      operationCount: plan.operations.length
+    })),
+    reminder: "Scans do not edit configs. Patch plans require apply_patch_plan with confirm=true."
+  };
+}
+
+function buildDoctorPrompt(action: "scan" | "cleanup", workspace?: string, localOnly = false): string {
+  const toolName = action === "cleanup" ? "doctor_cleanup" : "doctor_scan";
+  const args = [
+    workspace ? `workspace: ${JSON.stringify(workspace)}` : undefined,
+    localOnly ? "localOnly: true" : undefined
+  ].filter(Boolean);
+  return [
+    `Run MCP Doctor ${action} for this workspace.`,
+    `Call the ${toolName} tool${args.length > 0 ? ` with ${args.join(", ")}` : ""}.`,
+    "Give me the score, top cleanup findings, context-heavy MCPs, unmaintained or abandoned MCPs, unused/long-lived installs, major upgrades, and patch plan IDs.",
+    "Keep the answer short and practical. Do not apply a patch plan unless I explicitly ask you to apply a named plan."
+  ].join("\n");
+}
+
+function promptContent(text: string) {
+  return {
+    messages: [
+      {
+        role: "user" as const,
+        content: { type: "text" as const, text }
+      }
+    ]
+  };
 }

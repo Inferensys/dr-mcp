@@ -417,16 +417,16 @@
           <p class="lead">Audit, clean, and slim down the MCP setup your coding agent loads every day. Find forgotten servers, abandoned packages, duplicate tools, broad filesystem access, and context-heavy MCPs before they waste context or trigger unwanted tool calls.</p>
           <div class="install-copy" aria-label="Install command">
             <div class="install-copy-header">
-              <span>One command cleanup scan</span>
-              <button class="copy-button" type="button" data-copy="npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage">Copy</button>
+              <span>One command local scan</span>
+              <button class="copy-button" type="button" data-copy="npx @inferensys/mcp-doctor">Copy</button>
             </div>
-            <pre class="copy-command">npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage</pre>
+            <pre class="copy-command">npx @inferensys/mcp-doctor</pre>
           </div>
         </div>
         <div class="terminal" aria-label="MCP Doctor report preview">
           <div class="terminal-bar">
             <div class="dots"><span></span><span></span><span></span></div>
-            <span>mcp-doctor scan --registry --track-usage</span>
+            <span>mcp-doctor cleanup</span>
           </div>
           <pre><span class="ok">MCP cleanup report</span>
 
@@ -472,7 +472,7 @@ Patch plans:
 
     <section class="section" id="coverage">
       <h2>Scans the configs agentic coders actually collect.</h2>
-      <p>MCP Doctor puts your global Claude setup, Codex TOML, Cursor project config, VS Code settings, and random `.mcp.json` files into one cleanup report.</p>
+      <p>MCP Doctor puts your global Claude setup, Codex TOML, Cursor project config, VS Code settings, and random <code>.mcp.json</code> files into one cleanup report.</p>
       <div class="tool-grid">
         <div class="tool">Claude Desktop <span>json</span></div>
         <div class="tool">Claude Code / cc <span>json</span></div>
@@ -510,14 +510,25 @@ Patch plans:
     <section class="section" id="install">
       <h2>Start with one scan. Delete nothing until you approve it.</h2>
       <div class="install">
-        <p>The first command gives you a redacted local cleanup report. If you want changes, MCP Doctor creates named patch plans with backups. You decide what gets removed.</p>
-        <pre>npx @inferensys/mcp-doctor scan --workspace .
-npx @inferensys/mcp-doctor scan --registry --track-usage
+        <p>The first command gives you a redacted local cleanup report. <code>cleanup</code> adds package checks, abandoned repo signals, major upgrade checks, and local install-history tracking. If you want changes, MCP Doctor creates named patch plans with backups.</p>
+        <pre># CLI
+npx @inferensys/mcp-doctor
+npx @inferensys/mcp-doctor cleanup
 npx @inferensys/mcp-doctor report --format html
+
+# Codex / Claude Code MCP server
 npx @inferensys/mcp-doctor server
 
 codex mcp add mcp-doctor -- \
-  npx -y @inferensys/mcp-doctor server</pre>
+  npx -y @inferensys/mcp-doctor server
+
+claude mcp add mcp-doctor -- \
+  npx -y @inferensys/mcp-doctor server
+
+# In your agent session
+doctor_scan
+doctor_cleanup
+/doctor scan</pre>
       </div>
     </section>
   </main>
