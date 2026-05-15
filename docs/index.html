@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MCP Doctor</title>
-  <meta name="description" content="Roast and repair your MCP setup across Claude, Codex, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, and Zed.">
+  <meta name="description" content="CleanMyMac for MCPs. Audit, clean, and slim down your coding agent's MCP setup.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <style>
     :root {
@@ -94,28 +94,6 @@
       font-weight: 620;
     }
 
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 42px;
-      padding: 0 16px;
-      border: 1px solid var(--ink);
-      border-radius: 7px;
-      background: var(--ink);
-      color: white;
-      text-decoration: none;
-      font-weight: 720;
-      font-size: 14px;
-      white-space: nowrap;
-    }
-
-    .button.secondary {
-      border-color: var(--line);
-      background: transparent;
-      color: var(--ink);
-    }
-
     .hero {
       min-height: calc(100vh - 68px);
       display: flex;
@@ -146,11 +124,44 @@
       font-size: 20px;
     }
 
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
+    .install-copy {
       margin-top: 34px;
+      overflow: hidden;
+      border: 1px solid #c7cebe;
+      border-radius: 8px;
+      background: #11140f;
+      box-shadow: 0 18px 42px rgba(23, 32, 25, 0.1);
+    }
+
+    .install-copy-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 12px 11px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      color: #aeb8aa;
+      font: 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .copy-command {
+      margin: 0;
+      padding: 18px 20px;
+      color: #d7e4d1;
+      font: 14px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .copy-button {
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 6px;
+      background: #253327;
+      color: #e9f2e3;
+      font: 12px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      cursor: pointer;
     }
 
     .terminal {
@@ -191,7 +202,8 @@
       background: #45a86a;
     }
 
-    pre {
+    .terminal pre,
+    .install pre {
       margin: 0;
       padding: 24px;
       color: #d7e4d1;
@@ -299,6 +311,28 @@
       background: #11140f;
     }
 
+    .plain-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 32px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .plain-list li {
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .plain-list strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+
     footer {
       border-top: 1px solid var(--line);
       padding: 34px 0;
@@ -333,7 +367,8 @@
       }
 
       .tool-grid,
-      .checks {
+      .checks,
+      .plain-list {
         grid-template-columns: 1fr;
       }
 
@@ -355,8 +390,8 @@
         <span>MCP Doctor</span>
       </a>
       <div class="nav-links">
-        <a href="#coverage">Coverage</a>
-        <a href="#checks">Checks</a>
+        <a href="#why">Cleanup</a>
+        <a href="#catches">Finds</a>
         <a href="#install">Install</a>
         <a href="https://github.com/Inferensys/mcp-doctor">GitHub</a>
       </div>
@@ -367,44 +402,54 @@
     <section class="hero">
       <div class="hero-inner">
         <div>
-          <h1>Roast and repair your MCP setup.</h1>
-          <p class="lead">A local-first CLI and MCP server that audits broken configs, risky permissions, unpinned packages, context bloat, and duplicate tools before they slow down your coding agent.</p>
-          <div class="hero-actions">
-            <a class="button" href="https://www.npmjs.com/package/@inferensys/mcp-doctor">Install with npm</a>
-            <a class="button secondary" href="https://github.com/Inferensys/mcp-doctor">View source</a>
+          <h1>CleanMyMac for MCPs.</h1>
+          <p class="lead">Audit, clean, and slim down the MCP setup your coding agent loads every day. Find forgotten servers, abandoned packages, duplicate tools, broad filesystem access, and context-heavy MCPs before they waste context or trigger unwanted tool calls.</p>
+          <div class="install-copy" aria-label="Install command">
+            <div class="install-copy-header">
+              <span>One command cleanup scan</span>
+              <button class="copy-button" type="button" data-copy="npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage">Copy</button>
+            </div>
+            <pre class="copy-command">npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage</pre>
           </div>
         </div>
         <div class="terminal" aria-label="MCP Doctor report preview">
           <div class="terminal-bar">
             <div class="dots"><span></span><span></span><span></span></div>
-            <span>mcp-doctor scan --registry</span>
+            <span>mcp-doctor scan --registry --track-usage</span>
           </div>
-          <pre><span class="ok">MCP Doctor Report</span>
+          <pre><span class="ok">MCP cleanup report</span>
 
-Overall score: <span class="score">67/100</span>
-Reliability:   70/100
-Security:      60/100
-Context risk:  high
+Context risk: <span class="score">high</span>
+Loaded tools: 149 estimated
+Heavy MCPs:   github, browser, slack
 
-<span class="high">HIGH</span> Broad filesystem access
-<span class="high">HIGH</span> Inline secret environment value
-MED  Duplicate MCP server name
-MED  Unpinned package install
-MED  Abandoned GitHub repository
-LOW  Context-heavy MCP server
+<span class="high">Clean</span>  duplicate GitHub server
+<span class="high">Fix</span>    filesystem has access to /
+<span class="high">Ditch</span>  package repo archived
+Review browser MCP adds 25 tools
 
 Patch plans:
   remove-duplicate-servers
-  remove-dead-servers
   remove-abandoned-servers
   remove-heavy-context-servers</pre>
         </div>
       </div>
     </section>
 
+    <section class="section" id="why">
+      <h2>Your agent loads the junk drawer too.</h2>
+      <p>One project needs GitHub and Postgres. Another needs Playwright. A third needs a docs server. After a few weeks, your MCP configs look like an old startup disk: useful tools mixed with trial installs, duplicates, stale packages, and permissions you would not add today.</p>
+      <ul class="plain-list">
+        <li><strong>Audit the whole machine.</strong> Claude, Codex, Cursor, Windsurf, Copilot, VS Code, Cline, Roo Code, Continue, Zed, and project `.mcp.json` files.</li>
+        <li><strong>Clean obvious clutter.</strong> Duplicate servers, dead commands, missing paths, archived repos, and packages stuck on `latest`.</li>
+        <li><strong>Reclaim context.</strong> Rank servers by estimated tool count so heavy MCPs stay out of projects that do not need them.</li>
+        <li><strong>Find old installs.</strong> `--track-usage` builds a local ledger of MCPs that keep hanging around scan after scan.</li>
+      </ul>
+    </section>
+
     <section class="section" id="coverage">
-      <h2>Built for the MCP configs developers actually have.</h2>
-      <p>MCP Doctor scans local and project configs for the major coding assistants and IDEs, then normalizes every server into one model so duplicate tools, abandoned packages, broken launch commands, and risky settings are visible in one report.</p>
+      <h2>Scans the configs agentic coders actually collect.</h2>
+      <p>MCP Doctor puts your global Claude setup, Codex TOML, Cursor project config, VS Code settings, and random `.mcp.json` files into one cleanup report.</p>
       <div class="tool-grid">
         <div class="tool">Claude Desktop <span>json</span></div>
         <div class="tool">Claude Code / cc <span>json</span></div>
@@ -421,28 +466,28 @@ Patch plans:
       </div>
     </section>
 
-    <section class="section" id="checks">
-      <h2>Scores what usually breaks MCP installs.</h2>
+    <section class="section" id="catches">
+      <h2>What it finds before your agent trips over it.</h2>
       <div class="checks">
         <article class="check">
-          <h3>Reliability</h3>
-          <p>Find parse errors, missing commands, dead local paths, broken environment references, unsupported transports, stale packages, and abandoned GitHub repositories.</p>
+          <h3>Abandoned servers</h3>
+          <p>Checks npm metadata and GitHub activity so archived or quiet MCP projects are easy to remove.</p>
         </article>
         <article class="check">
-          <h3>Security</h3>
-          <p>Flag inline secrets, secret-like args, broad filesystem mounts, private repo leaks, and risky values before a client loads them.</p>
+          <h3>Context hogs</h3>
+          <p>Ranks heavy servers like GitHub, browser automation, Slack, Jira, and filesystem tools by estimated tool load.</p>
         </article>
         <article class="check">
-          <h3>Context Hygiene</h3>
-          <p>Rank MCPs by estimated loaded tool count, highlight duplicate servers, and show which configs are adding noise to your agent context.</p>
+          <h3>Risky configs</h3>
+          <p>Flags broad filesystem mounts, inline secrets, broken env refs, dead paths, duplicate names, and unpinned packages.</p>
         </article>
       </div>
     </section>
 
     <section class="section" id="install">
-      <h2>Use it as a CLI or as an MCP server.</h2>
+      <h2>Start with one scan. Delete nothing until you approve it.</h2>
       <div class="install">
-      <p>Run a one-off local scan, export a redacted Markdown or HTML report, track long-lived installs with an opt-in local ledger, or install MCP Doctor into Codex, Claude Code, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, or Zed as a normal stdio MCP server.</p>
+        <p>The first command gives you a redacted local cleanup report. If you want changes, MCP Doctor creates named patch plans with backups. You decide what gets removed.</p>
         <pre>npx @inferensys/mcp-doctor scan --workspace .
 npx @inferensys/mcp-doctor scan --registry --track-usage
 npx @inferensys/mcp-doctor report --format html
@@ -456,9 +501,22 @@ codex mcp add mcp-doctor -- \
 
   <footer>
     <div class="section">
-      <span>MIT License. Local-first and redacted by default.</span>
+      <span>MIT License. Local-first. Redacted by default.</span>
       <span>Registry: io.github.Inferensys/mcp-doctor</span>
     </div>
   </footer>
+  <script>
+    document.querySelectorAll("[data-copy]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const text = button.getAttribute("data-copy") || "";
+        await navigator.clipboard.writeText(text);
+        const previous = button.textContent;
+        button.textContent = "Copied";
+        window.setTimeout(() => {
+          button.textContent = previous;
+        }, 1400);
+      });
+    });
+  </script>
 </body>
 </html>

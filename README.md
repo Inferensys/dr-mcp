@@ -1,40 +1,63 @@
 # MCP Doctor
 
-Roast and repair your MCP setup.
+CleanMyMac for MCPs.
 
-MCP Doctor is a local-first CLI and MCP server that audits MCP configuration across the coding tools developers actually use, scores risk, explains problems, and creates reversible repair plans.
+Audit, clean, and slim down the MCP setup your coding agent loads every day.
 
-It is built for Claude Desktop, Claude Code (`cc`), OpenAI Codex CLI and Codex IDE, Cursor, Windsurf, GitHub Copilot in VS Code, GitHub Copilot CLI, VS Code and VS Code Insiders, Cline, Roo Code, Continue, Zed, and plain project `.mcp.json` files.
+If you use Claude Code, Codex, Cursor, Windsurf, Copilot, or VS Code across different projects, your MCP configs collect junk fast: old demo servers, duplicate GitHub tools, broad filesystem access, packages nobody maintains, and giant tool lists your agent has to sort through before it can write code.
 
-## Quick Start
+MCP Doctor scans that mess and shows what to remove.
 
 ```bash
-npx @inferensys/mcp-doctor scan --workspace .
 npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage
-npx @inferensys/mcp-doctor scan --json --registry
-npx @inferensys/mcp-doctor report --format html --workspace . > mcp-doctor-report.html
-npx @inferensys/mcp-doctor patch --plan remove-duplicate-servers --apply --workspace .
+```
+
+It does not delete anything during a scan. You get a cleanup report, a ranked list of context-heavy MCPs, and reversible patch plans you can apply after review.
+
+## What It Helps You Fix
+
+- **Reclaim context.** See which MCPs add the biggest tool lists to your agent's prompt.
+- **Cut unwanted tool calls.** Remove old servers your agent keeps considering even when the project does not need them.
+- **Ditch abandoned MCPs.** With `--registry`, check npm metadata and GitHub activity for archived or stale projects.
+- **Find leftovers.** Turn on `--track-usage` and build a local ledger of MCPs that keep showing up across scans.
+- **Remove duplicates.** Spot the same MCP registered in Claude, Cursor, VS Code, Codex, Windsurf, or project files.
+- **Fix risky configs.** Flag broad filesystem access, inline secrets, secret-looking args, missing commands, dead paths, and broken env refs.
+- **Stop floating installs.** Catch `npx` packages using `latest` or no version.
+
+## Commands
+
+```bash
+# Human-readable audit
+npx @inferensys/mcp-doctor scan --workspace .
+
+# Deeper cleanup report with package/repo checks and local install history
+npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage
+
+# JSON for scripts or CI
+npx @inferensys/mcp-doctor scan --workspace . --json --registry
+
+# Shareable cleanup report
+npx @inferensys/mcp-doctor report --workspace . --format html > mcp-doctor-report.html
+
+# Preview a repair plan
+npx @inferensys/mcp-doctor patch --workspace . --plan remove-duplicate-servers
+
+# Apply a reviewed repair plan with backups
+npx @inferensys/mcp-doctor patch --workspace . --plan remove-duplicate-servers --apply
+
+# Run as an MCP server
 npx @inferensys/mcp-doctor server
 ```
 
-By default reports are redacted and local-only. Add `--registry` to include live npm and official MCP Registry metadata checks.
+## Report Sections
 
-## What It Checks
+- **Score:** reliability, security, context hygiene, maintainability.
+- **Context weight:** MCPs ranked by estimated tool load.
+- **Install history:** long-lived servers from the local usage ledger.
+- **Findings:** concrete issues with source config paths.
+- **Patch plans:** safe edits such as removing duplicates, dead entries, abandoned servers, or context-heavy servers.
 
-- Broken JSON, JSONC, YAML, and TOML config files
-- Duplicate MCP server names across clients
-- Missing launch commands, dead paths, and unsupported transports
-- Unpinned `npx` package installs and `latest` usage
-- Broad filesystem access
-- Inline secrets and secret-like command arguments
-- Broken environment variable references
-- Excessive tool count and context hygiene risk
-- Stale, missing, or mismatched package metadata when `--registry` is enabled
-- Archived, abandoned, or quiet GitHub repositories when package metadata points to GitHub
-- Context-heavy MCPs ranked by estimated loaded tool count
-- Long-lived installed MCPs from the optional local usage ledger
-
-## Supported Config Locations
+## Supported Tools
 
 | Tool | Configs scanned |
 | --- | --- |
@@ -46,41 +69,17 @@ By default reports are redacted and local-only. Add `--registry` to include live
 | GitHub Copilot in VS Code | VS Code user settings, VS Code Insiders settings, `.vscode/mcp.json`, `.vscode/settings.json` |
 | GitHub Copilot CLI | `~/.copilot/mcp-config.json`, `.copilot/mcp-config.json` |
 | Cline | `~/.cline/data/settings/cline_mcp_settings.json`, `.cline/data/settings/cline_mcp_settings.json` |
-| Roo Code | `.roo/mcp.json`, common Roo VS Code global storage paths |
+| Roo Code | `.roo/mcp.json`, common Roo Code VS Code global storage paths |
 | Continue | `~/.continue/config.yaml`, `.continue/config.yaml` |
 | Zed | Zed user settings, `.zed/settings.json` |
 | Generic MCP | `.mcp.json` |
 
-## MCP Tools
-
-Run MCP Doctor as a server:
-
-```bash
-npx @inferensys/mcp-doctor server
-```
-
-Tools exposed:
-
-- `scan_mcp_setup`
-- `explain_issue`
-- `generate_patch_plan`
-- `apply_patch_plan`
-- `export_report`
-
-## Install Snippets
+## Add MCP Doctor To Your Agent
 
 ### Codex
 
 ```bash
 codex mcp add mcp-doctor -- npx -y @inferensys/mcp-doctor server
-```
-
-Equivalent `.codex/config.toml`:
-
-```toml
-[mcp_servers.mcp-doctor]
-command = "npx"
-args = ["-y", "@inferensys/mcp-doctor", "server"]
 ```
 
 ### Claude Code
@@ -89,9 +88,9 @@ args = ["-y", "@inferensys/mcp-doctor", "server"]
 claude mcp add mcp-doctor -- npx -y @inferensys/mcp-doctor server
 ```
 
-### Claude Desktop, Cursor, Windsurf, Cline, Roo Code, VS Code, GitHub Copilot in VS Code
+### JSON config clients
 
-Add this server entry to the tool's MCP JSON config:
+Use this for Claude Desktop, Cursor, Windsurf, Cline, Roo Code, VS Code, and GitHub Copilot in VS Code:
 
 ```json
 {
@@ -104,23 +103,7 @@ Add this server entry to the tool's MCP JSON config:
 }
 ```
 
-VS Code and GitHub Copilot also accept the `servers` form:
-
-```json
-{
-  "servers": {
-    "mcp-doctor": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@inferensys/mcp-doctor", "server"]
-    }
-  }
-}
-```
-
-### GitHub Copilot CLI
-
-Use `/mcp add` in Copilot CLI, or add this to `~/.copilot/mcp-config.json`:
+VS Code and GitHub Copilot may use `servers`:
 
 ```json
 {
@@ -159,13 +142,25 @@ mcpServers:
       - server
 ```
 
-## Safety Model
+## MCP Tools
 
-Scan never writes MCP client configs. Patch plans are explicit operations only, and applying a plan creates timestamped backups before changing a config file. Reports are redacted by default for secrets, tokens, emails, home paths, and private GitHub repo URLs.
+When running as a server, MCP Doctor exposes:
 
-Usage tracking is opt-in. `--track-usage` writes a local MCP Doctor ledger at `~/.mcp-doctor/usage-ledger.json` so reports can identify MCP servers that have stayed installed across multiple scans. MCP Doctor does not claim true per-tool usage unless a client exposes reliable usage data.
+- `scan_mcp_setup`
+- `explain_issue`
+- `generate_patch_plan`
+- `apply_patch_plan`
+- `export_report`
 
-MCP Doctor does not auto-install, uninstall, upgrade packages, or do destructive cleanup in v1.
+## Safety
+
+Scans never edit MCP client configs.
+
+Patch plans create timestamped backups before writing. Reports redact secrets, tokens, emails, home paths, and private GitHub repo URLs.
+
+Usage tracking is opt-in. `--track-usage` writes a local ledger at `~/.mcp-doctor/usage-ledger.json`. It tracks what remains installed across scans; it does not claim true per-tool usage unless a client exposes that data.
+
+MCP Doctor does not auto-install, uninstall, upgrade packages, or run destructive cleanup.
 
 ## Development
 
@@ -174,8 +169,6 @@ npm install
 npm run check
 node dist/cli.js scan --workspace tests/fixtures/mixed --json
 ```
-
-## Registry
 
 Registry name: `io.github.Inferensys/mcp-doctor`
 
