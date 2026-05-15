@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MCP Doctor</title>
-  <meta name="description" content="CleanMyMac for MCPs. Audit, clean, and slim down your coding agent's MCP setup.">
+  <meta name="description" content="Clean your MCPs. Audit, clean, and slim down your coding agent's MCP setup.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <style>
     :root {
@@ -223,6 +223,17 @@
       color: #80d69b;
     }
 
+    .muted-code {
+      color: #91a08c;
+    }
+
+    .bar {
+      display: inline-block;
+      min-width: 132px;
+      color: #80d69b;
+      letter-spacing: 0;
+    }
+
     .section {
       padding: 72px 0;
     }
@@ -402,7 +413,7 @@
     <section class="hero">
       <div class="hero-inner">
         <div>
-          <h1>CleanMyMac for MCPs.</h1>
+          <h1>Clean your MCPs.</h1>
           <p class="lead">Audit, clean, and slim down the MCP setup your coding agent loads every day. Find forgotten servers, abandoned packages, duplicate tools, broad filesystem access, and context-heavy MCPs before they waste context or trigger unwanted tool calls.</p>
           <div class="install-copy" aria-label="Install command">
             <div class="install-copy-header">
@@ -419,19 +430,26 @@
           </div>
           <pre><span class="ok">MCP cleanup report</span>
 
-Context risk: <span class="score">high</span>
-Loaded tools: 149 estimated
-Heavy MCPs:   github, browser, slack
+Context space
+github        <span class="bar">████████████</span> 80 tools
+browser       <span class="bar">█████░░░░░░░</span> 25 tools
+slack         <span class="bar">████░░░░░░░░</span> 20 tools
+postgres      <span class="bar">██░░░░░░░░░░</span> 10 tools
 
-<span class="high">Clean</span>  duplicate GitHub server
-<span class="high">Fix</span>    filesystem has access to /
-<span class="high">Ditch</span>  package repo archived
-Review browser MCP adds 25 tools
+Unmaintained
+<span class="high">ditch</span>  old-docs-mcp      archived repo
+<span class="high">ditch</span>  linear-helper     no push in 421 days
+
+Unused / forgotten
+review figma-mcp        seen 7 scans, 93 days
+review browser          heavy for this repo
 
 Patch plans:
-  remove-duplicate-servers
   remove-abandoned-servers
-  remove-heavy-context-servers</pre>
+  remove-long-lived-servers
+  remove-heavy-context-servers
+
+<span class="muted-code">No config changes until you apply a plan.</span></pre>
         </div>
       </div>
     </section>

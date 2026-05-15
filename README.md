@@ -1,6 +1,6 @@
 # MCP Doctor
 
-CleanMyMac for MCPs.
+Clean your MCPs.
 
 Audit, clean, and slim down the MCP setup your coding agent loads every day.
 
