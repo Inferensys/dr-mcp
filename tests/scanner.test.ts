@@ -1,4 +1,4 @@
-import { mkdtemp, cp, readFile } from "node:fs/promises";
+import { mkdtemp, cp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -25,6 +25,8 @@ describe("MCP Doctor scanner", () => {
     expect(ids.some((id) => id.startsWith("unpinned-package"))).toBe(true);
     expect(ids.some((id) => id.startsWith("missing-path"))).toBe(true);
     expect(report.summary.contextRisk).toBe("high");
+    expect(report.summary.heavyServerCount).toBeGreaterThan(0);
+    expect(report.contextWeights[0]?.estimatedToolCount).toBeGreaterThanOrEqual(25);
   });
 
   it("redacts secrets in exported JSON", async () => {
@@ -37,6 +39,7 @@ describe("MCP Doctor scanner", () => {
   it("exports markdown and html reports", async () => {
     const report = await scanMcpSetup({ workspace: fixture, includeGlobal: false });
     expect(renderReport(report, "markdown")).toContain("# MCP Doctor Report");
+    expect(renderReport(report, "markdown")).toContain("## Context Weight");
     expect(renderReport(report, "html")).toContain("<!doctype html>");
   });
 
@@ -119,6 +122,62 @@ describe("MCP Doctor scanner", () => {
       "stale",
       "registry-mismatch"
     ]);
+  });
+
+  it("flags abandoned GitHub repositories from package metadata", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (url.includes("api.github.com/repos/example/abandoned-mcp")) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              pushed_at: "2023-01-01T00:00:00Z",
+              archived: false,
+              disabled: false,
+              stargazers_count: 42,
+              open_issues_count: 7
+            })
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            "dist-tags": { latest: "1.0.0" },
+            repository: { type: "git", url: "git+https://github.com/example/abandoned-mcp.git" },
+            versions: { "1.0.0": {} }
+          })
+        };
+      })
+    );
+    const report = await scanMcpSetup({ workspace: fixture, includeGlobal: false, registry: true });
+    expect(report.registryFindings.some((finding) => finding.repository?.status === "abandoned")).toBe(true);
+    expect(report.diagnostics.some((diagnostic) => diagnostic.id.startsWith("repository:abandoned"))).toBe(true);
+    expect(report.patchPlans.some((plan) => plan.id === "remove-abandoned-servers")).toBe(true);
+  });
+
+  it("tracks long-lived installs only when usage tracking is enabled", async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), "mcp-doctor-usage-"));
+    await cp(fixture, dir, { recursive: true });
+    const ledgerPath = path.join(dir, "usage-ledger.json");
+    await scanMcpSetup({ workspace: dir, includeGlobal: false, trackUsage: true, usageLedgerPath: ledgerPath });
+    const ledger = JSON.parse(await readFile(ledgerPath, "utf8"));
+    for (const entry of Object.values(ledger.entries) as Array<Record<string, unknown>>) {
+      if (entry.serverName === "github") {
+        entry.firstSeenAt = "2024-01-01T00:00:00Z";
+        entry.lastSeenAt = "2024-01-01T00:00:00Z";
+        entry.scanCount = 2;
+      }
+    }
+    await writeFile(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`);
+
+    const report = await scanMcpSetup({ workspace: dir, includeGlobal: false, trackUsage: true, usageLedgerPath: ledgerPath });
+    expect(report.usage.trackingEnabled).toBe(true);
+    expect(report.usage.reviewCandidateCount).toBeGreaterThan(0);
+    expect(report.diagnostics.some((diagnostic) => diagnostic.id.startsWith("usage:long-lived"))).toBe(true);
+    expect(report.patchPlans.some((plan) => plan.id === "remove-long-lived-servers")).toBe(true);
   });
 
   it("applies duplicate-removal patch plans with backups and idempotence", async () => {

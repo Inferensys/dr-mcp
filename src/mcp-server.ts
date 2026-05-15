@@ -7,13 +7,15 @@ import { renderReport } from "./report.js";
 
 const workspaceSchema = {
   workspace: z.string().optional().describe("Workspace path to scan. Defaults to the server process current directory."),
-  registry: z.boolean().optional().describe("Enable live npm registry metadata checks.")
+  registry: z.boolean().optional().describe("Enable live npm registry metadata checks."),
+  trackUsage: z.boolean().optional().describe("Persist local scan history to identify long-lived MCP installs."),
+  usageLedgerPath: z.string().optional().describe("Optional path for the local usage ledger.")
 };
 
 export async function runMcpServer(): Promise<void> {
   const server = new McpServer({
     name: "mcp-doctor",
-    version: "0.1.0"
+    version: "0.2.0"
   });
 
   server.tool(
@@ -21,7 +23,12 @@ export async function runMcpServer(): Promise<void> {
     "Scan local MCP configuration files and return a redacted diagnostic report.",
     workspaceSchema,
     async (params) => {
-      const report = await scanMcpSetup({ workspace: params.workspace, registry: params.registry });
+      const report = await scanMcpSetup({
+        workspace: params.workspace,
+        registry: params.registry,
+        trackUsage: params.trackUsage,
+        usageLedgerPath: params.usageLedgerPath
+      });
       return jsonContent(report);
     }
   );
@@ -34,7 +41,12 @@ export async function runMcpServer(): Promise<void> {
       diagnosticId: z.string().describe("Diagnostic ID from scan_mcp_setup.")
     },
     async (params) => {
-      const report = await scanMcpSetup({ workspace: params.workspace, registry: params.registry });
+      const report = await scanMcpSetup({
+        workspace: params.workspace,
+        registry: params.registry,
+        trackUsage: params.trackUsage,
+        usageLedgerPath: params.usageLedgerPath
+      });
       const diagnostic = report.diagnostics.find((item) => item.id === params.diagnosticId);
       if (!diagnostic) return jsonContent({ error: true, message: `Diagnostic not found: ${params.diagnosticId}` });
       return jsonContent({
@@ -55,7 +67,12 @@ export async function runMcpServer(): Promise<void> {
       planId: z.string().describe("Patch plan ID, such as remove-duplicate-servers or pin-npx-packages.")
     },
     async (params) => {
-      const report = await scanMcpSetup({ workspace: params.workspace, registry: true });
+      const report = await scanMcpSetup({
+        workspace: params.workspace,
+        registry: true,
+        trackUsage: params.trackUsage,
+        usageLedgerPath: params.usageLedgerPath
+      });
       const plan = report.patchPlans.find((item) => item.id === params.planId);
       if (!plan) return jsonContent({ error: true, message: `Patch plan not found: ${params.planId}` });
       return jsonContent(plan);
@@ -74,7 +91,12 @@ export async function runMcpServer(): Promise<void> {
       if (!params.confirm) {
         return jsonContent({ error: true, message: "Set confirm=true to apply a patch plan." });
       }
-      const report = await scanMcpSetup({ workspace: params.workspace, registry: true });
+      const report = await scanMcpSetup({
+        workspace: params.workspace,
+        registry: true,
+        trackUsage: params.trackUsage,
+        usageLedgerPath: params.usageLedgerPath
+      });
       const plan = report.patchPlans.find((item) => item.id === params.planId);
       if (!plan) return jsonContent({ error: true, message: `Patch plan not found: ${params.planId}` });
       return jsonContent(await applyPatchPlan(plan, report.configs));
@@ -89,7 +111,12 @@ export async function runMcpServer(): Promise<void> {
       format: z.enum(["markdown", "html", "json"]).optional().describe("Report format. Defaults to markdown.")
     },
     async (params) => {
-      const report = await scanMcpSetup({ workspace: params.workspace, registry: params.registry });
+      const report = await scanMcpSetup({
+        workspace: params.workspace,
+        registry: params.registry,
+        trackUsage: params.trackUsage,
+        usageLedgerPath: params.usageLedgerPath
+      });
       return {
         content: [{ type: "text" as const, text: renderReport(report, params.format || "markdown") }]
       };

@@ -19,9 +19,11 @@ async function main(): Promise<void> {
   }
   const workspace = stringFlag(flags.workspace) || process.cwd();
   const registry = Boolean(flags.registry);
+  const trackUsage = Boolean(flags["track-usage"]);
+  const usageLedgerPath = stringFlag(flags["usage-ledger"]);
 
   if (command === "scan") {
-    const report = await scanMcpSetup({ workspace, registry });
+    const report = await scanMcpSetup({ workspace, registry, trackUsage, usageLedgerPath });
     const format: ReportFormat = flags.json ? "json" : "markdown";
     process.stdout.write(renderReport(report, format));
     return;
@@ -29,7 +31,7 @@ async function main(): Promise<void> {
 
   if (command === "report") {
     const format = parseReportFormat(stringFlag(flags.format) || "markdown");
-    const report = await scanMcpSetup({ workspace, registry });
+    const report = await scanMcpSetup({ workspace, registry, trackUsage, usageLedgerPath });
     process.stdout.write(renderReport(report, format));
     return;
   }
@@ -37,7 +39,12 @@ async function main(): Promise<void> {
   if (command === "patch") {
     const planId = stringFlag(flags.plan);
     if (!planId) throw new Error("patch requires --plan <planId>");
-    const report = await scanMcpSetup({ workspace, registry: registry || planId === "pin-npx-packages" });
+    const report = await scanMcpSetup({
+      workspace,
+      registry: registry || planId === "pin-npx-packages" || planId === "remove-abandoned-servers",
+      trackUsage,
+      usageLedgerPath
+    });
     const plan = report.patchPlans.find((item) => item.id === planId);
     if (!plan) {
       process.stdout.write(`No patch plan found for "${planId}". Run scan --registry to see available plans.\n`);
@@ -94,14 +101,15 @@ function printHelp(): void {
   process.stdout.write(`MCP Doctor - roast and repair your MCP setup
 
 Usage:
-  mcp-doctor scan [--json] [--workspace <path>] [--registry]
-  mcp-doctor report [--format markdown|html|json] [--workspace <path>] [--registry]
-  mcp-doctor patch --plan <planId> [--apply] [--workspace <path>]
+  mcp-doctor scan [--json] [--workspace <path>] [--registry] [--track-usage]
+  mcp-doctor report [--format markdown|html|json] [--workspace <path>] [--registry] [--track-usage]
+  mcp-doctor patch --plan <planId> [--apply] [--workspace <path>] [--track-usage]
   mcp-doctor server
 
 Examples:
   npx @inferensys/mcp-doctor scan --workspace .
   npx @inferensys/mcp-doctor scan --json --registry
+  npx @inferensys/mcp-doctor scan --track-usage
   npx @inferensys/mcp-doctor patch --plan remove-duplicate-servers --apply
 `);
 }

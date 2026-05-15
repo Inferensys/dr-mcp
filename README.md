@@ -10,6 +10,7 @@ It is built for Claude Desktop, Claude Code (`cc`), OpenAI Codex CLI and Codex I
 
 ```bash
 npx @inferensys/mcp-doctor scan --workspace .
+npx @inferensys/mcp-doctor scan --workspace . --registry --track-usage
 npx @inferensys/mcp-doctor scan --json --registry
 npx @inferensys/mcp-doctor report --format html --workspace . > mcp-doctor-report.html
 npx @inferensys/mcp-doctor patch --plan remove-duplicate-servers --apply --workspace .
@@ -29,6 +30,9 @@ By default reports are redacted and local-only. Add `--registry` to include live
 - Broken environment variable references
 - Excessive tool count and context hygiene risk
 - Stale, missing, or mismatched package metadata when `--registry` is enabled
+- Archived, abandoned, or quiet GitHub repositories when package metadata points to GitHub
+- Context-heavy MCPs ranked by estimated loaded tool count
+- Long-lived installed MCPs from the optional local usage ledger
 
 ## Supported Config Locations
 
@@ -157,7 +161,9 @@ mcpServers:
 
 ## Safety Model
 
-Scan never writes. Patch plans are explicit operations only, and applying a plan creates timestamped backups before changing a config file. Reports are redacted by default for secrets, tokens, emails, home paths, and private GitHub repo URLs.
+Scan never writes MCP client configs. Patch plans are explicit operations only, and applying a plan creates timestamped backups before changing a config file. Reports are redacted by default for secrets, tokens, emails, home paths, and private GitHub repo URLs.
+
+Usage tracking is opt-in. `--track-usage` writes a local MCP Doctor ledger at `~/.mcp-doctor/usage-ledger.json` so reports can identify MCP servers that have stayed installed across multiple scans. MCP Doctor does not claim true per-tool usage unless a client exposes reliable usage data.
 
 MCP Doctor does not auto-install, uninstall, upgrade packages, or do destructive cleanup in v1.
 

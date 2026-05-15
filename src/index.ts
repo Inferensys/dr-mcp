@@ -1,6 +1,7 @@
 export type {
   ConfigFile,
   ConfigTarget,
+  ContextWeightEntry,
   Diagnostic,
   DiagnosticSeverity,
   NormalizedServer,
@@ -8,10 +9,13 @@ export type {
   PatchPlan,
   PatchResult,
   RegistryFinding,
+  RepositoryActivity,
   ScanOptions,
   ScanReport,
   ScoreCategory,
-  ScoreSummary
+  ScoreSummary,
+  UsageSignal,
+  UsageSummary
 } from "./types.js";
 export { scanMcpSetup } from "./scanner.js";
 export { applyPatchPlan, generatePatchPlans } from "./patch.js";

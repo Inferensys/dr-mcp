@@ -390,18 +390,21 @@ Context risk:  high
 <span class="high">HIGH</span> Inline secret environment value
 MED  Duplicate MCP server name
 MED  Unpinned package install
+MED  Abandoned GitHub repository
+LOW  Context-heavy MCP server
 
 Patch plans:
   remove-duplicate-servers
   remove-dead-servers
-  pin-npx-packages</pre>
+  remove-abandoned-servers
+  remove-heavy-context-servers</pre>
         </div>
       </div>
     </section>
 
     <section class="section" id="coverage">
       <h2>Built for the MCP configs developers actually have.</h2>
-      <p>MCP Doctor scans local and project configs for the major coding assistants and IDEs, then normalizes every server into one model so duplicate tools, broken launch commands, and risky settings are visible in one report.</p>
+      <p>MCP Doctor scans local and project configs for the major coding assistants and IDEs, then normalizes every server into one model so duplicate tools, abandoned packages, broken launch commands, and risky settings are visible in one report.</p>
       <div class="tool-grid">
         <div class="tool">Claude Desktop <span>json</span></div>
         <div class="tool">Claude Code / cc <span>json</span></div>
@@ -423,7 +426,7 @@ Patch plans:
       <div class="checks">
         <article class="check">
           <h3>Reliability</h3>
-          <p>Find parse errors, missing commands, dead local paths, broken environment references, unsupported transports, and stale package metadata.</p>
+          <p>Find parse errors, missing commands, dead local paths, broken environment references, unsupported transports, stale packages, and abandoned GitHub repositories.</p>
         </article>
         <article class="check">
           <h3>Security</h3>
@@ -431,7 +434,7 @@ Patch plans:
         </article>
         <article class="check">
           <h3>Context Hygiene</h3>
-          <p>Estimate loaded tool count, highlight duplicate servers, and show which configs are adding noise to your agent context.</p>
+          <p>Rank MCPs by estimated loaded tool count, highlight duplicate servers, and show which configs are adding noise to your agent context.</p>
         </article>
       </div>
     </section>
@@ -439,8 +442,9 @@ Patch plans:
     <section class="section" id="install">
       <h2>Use it as a CLI or as an MCP server.</h2>
       <div class="install">
-        <p>Run a one-off local scan, export a redacted Markdown or HTML report, or install MCP Doctor into Codex, Claude Code, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, or Zed as a normal stdio MCP server.</p>
+      <p>Run a one-off local scan, export a redacted Markdown or HTML report, track long-lived installs with an opt-in local ledger, or install MCP Doctor into Codex, Claude Code, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, or Zed as a normal stdio MCP server.</p>
         <pre>npx @inferensys/mcp-doctor scan --workspace .
+npx @inferensys/mcp-doctor scan --registry --track-usage
 npx @inferensys/mcp-doctor report --format html
 npx @inferensys/mcp-doctor server
 

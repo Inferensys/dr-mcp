@@ -1,11 +1,13 @@
 import path from "node:path";
 import type {
   ConfigFile,
+  ContextWeightEntry,
   Diagnostic,
   NormalizedServer,
   RegistryFinding,
   ScanOptions,
-  ScoreSummary
+  ScoreSummary,
+  UsageSignal
 } from "./types.js";
 import { isExecutableOnPath, pathExists } from "./fs-utils.js";
 import { containsSecret, isSecretKey } from "./redact.js";
@@ -14,7 +16,8 @@ export async function runDiagnostics(
   configs: ConfigFile[],
   servers: NormalizedServer[],
   registryFindings: RegistryFinding[],
-  options: ScanOptions
+  options: ScanOptions,
+  usageSignals: UsageSignal[] = []
 ): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   diagnostics.push(...parseDiagnostics(configs));
@@ -22,6 +25,8 @@ export async function runDiagnostics(
   diagnostics.push(...staticServerDiagnostics(servers, options));
   diagnostics.push(...registryDiagnostics(registryFindings, servers));
   diagnostics.push(...toolCountDiagnostics(servers));
+  diagnostics.push(...contextWeightDiagnostics(servers));
+  diagnostics.push(...usageDiagnostics(usageSignals, servers));
   diagnostics.push(...(await pathDiagnostics(servers, options)));
   return diagnostics;
 }
@@ -45,6 +50,25 @@ export function scoreDiagnostics(diagnostics: Diagnostic[]): ScoreSummary {
 
 export function estimateToolCount(servers: NormalizedServer[]): number {
   return servers.filter((server) => !server.disabled).reduce((total, server) => total + estimateServerTools(server), 0);
+}
+
+export function contextWeights(servers: NormalizedServer[]): ContextWeightEntry[] {
+  return servers
+    .filter((server) => !server.disabled)
+    .map((server) => {
+      const estimatedToolCount = estimateServerTools(server);
+      return {
+        serverId: server.id,
+        serverName: server.name,
+        target: server.target,
+        sourceFile: server.sourceFile,
+        packageName: server.packageName,
+        estimatedToolCount,
+        weight: contextWeight(estimatedToolCount),
+        reasons: contextWeightReasons(server, estimatedToolCount)
+      } satisfies ContextWeightEntry;
+    })
+    .sort((left, right) => right.estimatedToolCount - left.estimatedToolCount);
 }
 
 export function contextRisk(estimatedToolCount: number): "low" | "medium" | "high" {
@@ -241,7 +265,7 @@ async function pathDiagnostics(servers: NormalizedServer[], options: ScanOptions
 
 function registryDiagnostics(findings: RegistryFinding[], servers: NormalizedServer[]): Diagnostic[] {
   const byId = new Map(servers.map((server) => [server.id, server]));
-  return findings
+  const packageDiagnostics = findings
     .filter(
       (finding) =>
         finding.status === "missing" || finding.status === "stale" || finding.status === "registry-mismatch"
@@ -271,6 +295,63 @@ function registryDiagnostics(findings: RegistryFinding[], servers: NormalizedSer
               : undefined
       } satisfies Diagnostic;
     });
+  const repositoryDiagnostics: Diagnostic[] = findings.flatMap((finding): Diagnostic[] => {
+    const server = byId.get(finding.serverId);
+    const repository = finding.repository;
+    if (!repository) return [];
+    if (repository.status === "archived") {
+      return [
+        {
+          id: `repository:archived:${finding.serverId}`,
+          category: "maintainability",
+          severity: "high",
+          title: "MCP package repository is archived",
+          message: `Server "${server?.name || finding.packageName}" comes from an archived GitHub repository.`,
+          target: server?.target,
+          sourceFile: server?.sourceFile,
+          serverId: finding.serverId,
+          serverName: server?.name,
+          evidence: repository.url,
+          fixPlanId: "remove-abandoned-servers"
+        } satisfies Diagnostic
+      ];
+    }
+    if (repository.status === "abandoned") {
+      return [
+        {
+          id: `repository:abandoned:${finding.serverId}`,
+          category: "maintainability",
+          severity: "medium",
+          title: "MCP package repository looks abandoned",
+          message: `Server "${server?.name || finding.packageName}" has no GitHub push activity for ${repository.daysSincePush} days.`,
+          target: server?.target,
+          sourceFile: server?.sourceFile,
+          serverId: finding.serverId,
+          serverName: server?.name,
+          evidence: repository.url,
+          fixPlanId: "remove-abandoned-servers"
+        } satisfies Diagnostic
+      ];
+    }
+    if (repository.status === "quiet") {
+      return [
+        {
+          id: `repository:quiet:${finding.serverId}`,
+          category: "maintainability",
+          severity: "low",
+          title: "MCP package repository is quiet",
+          message: `Server "${server?.name || finding.packageName}" has no GitHub push activity for ${repository.daysSincePush} days.`,
+          target: server?.target,
+          sourceFile: server?.sourceFile,
+          serverId: finding.serverId,
+          serverName: server?.name,
+          evidence: repository.url
+        } satisfies Diagnostic
+      ];
+    }
+    return [];
+  });
+  return [...packageDiagnostics, ...repositoryDiagnostics];
 }
 
 function toolCountDiagnostics(servers: NormalizedServer[]): Diagnostic[] {
@@ -288,7 +369,43 @@ function toolCountDiagnostics(servers: NormalizedServer[]): Diagnostic[] {
   ];
 }
 
-function estimateServerTools(server: NormalizedServer): number {
+function contextWeightDiagnostics(servers: NormalizedServer[]): Diagnostic[] {
+  return contextWeights(servers)
+    .filter((entry) => entry.weight === "heavy" || entry.weight === "extreme")
+    .map((entry) => ({
+      id: `context-weight:${entry.weight}:${entry.serverId}`,
+      category: "contextHygiene",
+      severity: entry.weight === "extreme" ? "medium" : "low",
+      title: "MCP server is context-heavy",
+      message: `Server "${entry.serverName}" is estimated to expose about ${entry.estimatedToolCount} tools. Review whether this belongs in every coding session.`,
+      target: entry.target,
+      sourceFile: entry.sourceFile,
+      serverId: entry.serverId,
+      serverName: entry.serverName,
+      evidence: entry.reasons.join("; "),
+      fixPlanId: "remove-heavy-context-servers"
+    }) satisfies Diagnostic);
+}
+
+function usageDiagnostics(usageSignals: UsageSignal[], servers: NormalizedServer[]): Diagnostic[] {
+  const serverIds = new Set(servers.filter((server) => !server.disabled).map((server) => server.id));
+  return usageSignals
+    .filter((signal) => signal.status === "long-lived" && serverIds.has(signal.serverId))
+    .map((signal) => ({
+      id: `usage:long-lived:${signal.serverId}`,
+      category: "maintainability",
+      severity: "info",
+      title: "Long-lived MCP install needs review",
+      message: `MCP Doctor has seen "${signal.serverName}" in ${signal.scanCount} tracked scans across ${signal.daysInstalled} days. If you do not use it, consider removing it.`,
+      target: signal.target,
+      sourceFile: signal.sourceFile,
+      serverId: signal.serverId,
+      serverName: signal.serverName,
+      fixPlanId: "remove-long-lived-servers"
+    }));
+}
+
+export function estimateServerTools(server: NormalizedServer): number {
   const haystack = `${server.name} ${server.packageName || ""}`.toLowerCase();
   if (haystack.includes("github")) return 80;
   if (haystack.includes("playwright") || haystack.includes("browser")) return 25;
@@ -297,6 +414,23 @@ function estimateServerTools(server: NormalizedServer): number {
   if (haystack.includes("jira") || haystack.includes("atlassian")) return 18;
   if (haystack.includes("postgres") || haystack.includes("sqlite") || haystack.includes("database")) return 10;
   return 8;
+}
+
+function contextWeight(estimatedToolCount: number): ContextWeightEntry["weight"] {
+  if (estimatedToolCount >= 60) return "extreme";
+  if (estimatedToolCount >= 20) return "heavy";
+  if (estimatedToolCount >= 10) return "medium";
+  return "light";
+}
+
+function contextWeightReasons(server: NormalizedServer, estimatedToolCount: number): string[] {
+  const haystack = `${server.name} ${server.packageName || ""}`.toLowerCase();
+  const reasons = [`estimated ${estimatedToolCount} loaded tools`];
+  if (haystack.includes("github")) reasons.push("GitHub servers often expose many repo, issue, PR, and workflow tools");
+  if (haystack.includes("playwright") || haystack.includes("browser")) reasons.push("browser automation servers expose broad interaction tools");
+  if (haystack.includes("slack")) reasons.push("chat/workspace servers can expose many channel and message tools");
+  if (haystack.includes("jira") || haystack.includes("atlassian")) reasons.push("project-management servers can expose many issue and search tools");
+  return reasons;
 }
 
 function hasBroadFilesystemAccess(server: NormalizedServer, options: ScanOptions): boolean {

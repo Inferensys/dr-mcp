@@ -66,6 +66,17 @@ export function renderMarkdown(report: ScanReport): string {
     `- Duplicate server entries: ${report.summary.duplicateServerCount}`,
     `- Estimated loaded tools: ${report.summary.estimatedToolCount}`,
     `- Context risk: **${report.summary.contextRisk}**`,
+    `- Context-heavy servers: ${report.summary.heavyServerCount}`,
+    `- Usage tracking: ${report.usage.trackingEnabled ? `enabled (${report.usage.trackedServerCount} tracked)` : "disabled"}`,
+    `- Long-lived install review candidates: ${report.usage.reviewCandidateCount}`,
+    ``,
+    `## Context Weight`,
+    ``,
+    ...formatContextWeights(report),
+    ``,
+    `## Install History`,
+    ``,
+    ...formatUsageSignals(report),
     ``,
     `## Findings`,
     ``,
@@ -83,6 +94,27 @@ export function renderMarkdown(report: ScanReport): string {
         )),
     ``
   ].join("\n");
+}
+
+function formatContextWeights(report: ScanReport): string[] {
+  if (report.contextWeights.length === 0) return [`No enabled MCP servers found.`];
+  return report.contextWeights.slice(0, 10).map((entry) => {
+    const packageText = entry.packageName ? ` (${entry.packageName})` : "";
+    return `- **${entry.serverName}**${packageText}: ${entry.estimatedToolCount} estimated tools, ${entry.weight} context weight. ${entry.reasons.join("; ")}.`;
+  });
+}
+
+function formatUsageSignals(report: ScanReport): string[] {
+  if (!report.usage.trackingEnabled) {
+    return [`Usage tracking is off. Run with \`--track-usage\` to build a local install-history ledger without changing MCP client configs.`];
+  }
+  if (report.usageSignals.length === 0) return [`No enabled MCP servers found to track.`];
+  const candidates = report.usageSignals.filter((signal) => signal.status === "long-lived");
+  const rows = candidates.length > 0 ? candidates : report.usageSignals.slice(0, 10);
+  return rows.map((signal) => {
+    const days = signal.daysInstalled === undefined ? "unknown age" : `${signal.daysInstalled} days`;
+    return `- **${signal.serverName}**: ${signal.status}, ${signal.scanCount} tracked scan(s), ${days}. ${signal.message}.`;
+  });
 }
 
 function renderHtml(report: ScanReport): string {

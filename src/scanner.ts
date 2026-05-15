@@ -4,8 +4,9 @@ import type { ScanOptions, ScanReport } from "./types.js";
 import { discoverConfigFiles } from "./discover.js";
 import { normalizeServers } from "./normalize.js";
 import { checkPackageRegistry } from "./registry.js";
-import { contextRisk, estimateToolCount, runDiagnostics, scoreDiagnostics } from "./checks.js";
+import { contextRisk, contextWeights, estimateToolCount, runDiagnostics, scoreDiagnostics } from "./checks.js";
 import { generatePatchPlans } from "./patch.js";
+import { analyzeUsageSignals } from "./usage.js";
 
 export async function scanMcpSetup(options: Partial<ScanOptions> = {}): Promise<ScanReport> {
   const scanOptions: ScanOptions = {
@@ -13,14 +14,18 @@ export async function scanMcpSetup(options: Partial<ScanOptions> = {}): Promise<
     homeDir: options.homeDir || os.homedir(),
     registry: Boolean(options.registry),
     includeGlobal: options.includeGlobal !== false,
-    redact: options.redact !== false
+    redact: options.redact !== false,
+    trackUsage: Boolean(options.trackUsage),
+    usageLedgerPath: options.usageLedgerPath
   };
   const configs = await discoverConfigFiles(scanOptions);
   const servers = normalizeServers(configs);
   const registryFindings = scanOptions.registry ? await checkPackageRegistry(servers) : [];
-  const diagnostics = await runDiagnostics(configs, servers, registryFindings, scanOptions);
+  const usage = await analyzeUsageSignals(servers, scanOptions);
+  const diagnostics = await runDiagnostics(configs, servers, registryFindings, scanOptions, usage.signals);
   const score = scoreDiagnostics(diagnostics);
   const estimatedToolCount = estimateToolCount(servers);
+  const weights = contextWeights(servers);
   const duplicateServerCount = countDuplicateServers(servers);
   return {
     generatedAt: new Date().toISOString(),
@@ -34,8 +39,12 @@ export async function scanMcpSetup(options: Partial<ScanOptions> = {}): Promise<
       enabledServerCount: servers.filter((server) => !server.disabled).length,
       duplicateServerCount,
       estimatedToolCount,
-      contextRisk: contextRisk(estimatedToolCount)
+      contextRisk: contextRisk(estimatedToolCount),
+      heavyServerCount: weights.filter((entry) => entry.weight === "heavy" || entry.weight === "extreme").length
     },
+    contextWeights: weights,
+    usage: usage.summary,
+    usageSignals: usage.signals,
     configs,
     servers,
     registryFindings,

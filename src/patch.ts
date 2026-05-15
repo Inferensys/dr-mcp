@@ -46,6 +46,42 @@ export function generatePatchPlans(
       operations: pinOps
     });
   }
+
+  const abandonedOps = removeOpsForDiagnostics("remove-abandoned-servers", diagnostics, servers);
+  if (abandonedOps.length > 0) {
+    plans.push({
+      id: "remove-abandoned-servers",
+      title: "Remove MCP servers from archived or abandoned repositories",
+      description: "Removes server definitions whose package repository is archived or has had no GitHub push activity for at least a year.",
+      risk: "medium",
+      diagnostics: diagnostics.filter((item) => item.fixPlanId === "remove-abandoned-servers").map((item) => item.id),
+      operations: abandonedOps
+    });
+  }
+
+  const heavyOps = removeOpsForDiagnostics("remove-heavy-context-servers", diagnostics, servers);
+  if (heavyOps.length > 0) {
+    plans.push({
+      id: "remove-heavy-context-servers",
+      title: "Remove context-heavy MCP servers",
+      description: "Removes server definitions estimated to load many tools into every client session. Review each operation before applying.",
+      risk: "medium",
+      diagnostics: diagnostics.filter((item) => item.fixPlanId === "remove-heavy-context-servers").map((item) => item.id),
+      operations: heavyOps
+    });
+  }
+
+  const longLivedOps = removeOpsForDiagnostics("remove-long-lived-servers", diagnostics, servers);
+  if (longLivedOps.length > 0) {
+    plans.push({
+      id: "remove-long-lived-servers",
+      title: "Remove long-lived MCP installs marked for review",
+      description: "Removes server definitions that have stayed installed across multiple tracked scans. Apply only after confirming you do not use them.",
+      risk: "medium",
+      diagnostics: diagnostics.filter((item) => item.fixPlanId === "remove-long-lived-servers").map((item) => item.id),
+      operations: longLivedOps
+    });
+  }
   return plans;
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "@inferensys/mcp-doctor",
-  "version": "0.1.0",
-  "description": "Roast and repair your MCP setup across Claude, Codex, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, and Zed.",
+  "version": "0.2.0",
+  "description": "Roast and repair your MCP setup with abandoned-package, usage-history, context-weight, security, and reliability checks.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -37,7 +37,11 @@
     "cline",
     "roo-code",
     "continue",
-    "zed"
+    "zed",
+    "mcp-doctor",
+    "mcp-audit",
+    "context-hygiene",
+    "security-audit"
   ],
   "license": "MIT",
   "dependencies": {
