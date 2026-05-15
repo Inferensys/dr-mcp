@@ -16,6 +16,8 @@ npx @inferensys/mcp-doctor patch --plan remove-duplicate-servers --apply --works
 npx @inferensys/mcp-doctor server
 ```
 
+The package is published to GitHub Packages for `0.1.0`. npmjs publishing is configured but requires the `@inferensys` npm scope credentials before the public `npx` command resolves from registry.npmjs.org.
+
 By default reports are redacted and local-only. Add `--registry` to include live npm and official MCP Registry metadata checks.
 
 ## What It Checks
