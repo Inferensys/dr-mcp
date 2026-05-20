@@ -3,26 +3,116 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>dr-mcp</title>
-  <meta name="description" content="Clean your MCPs. Audit, clean, and slim down your coding agent's MCP setup.">
+  <title>dr-mcp | MCP Audit and Cleanup for Claude Code, Codex, Cursor, VS Code, Windsurf</title>
+  <meta name="description" content="Clean your MCPs. dr-mcp audits Claude Code, Codex, Cursor, VS Code, Windsurf, GitHub Copilot, Cline, Roo Code, Continue, Zed, and project MCP configs for stale servers, context-heavy tools, unsafe permissions, abandoned packages, and major upgrades.">
+  <meta name="keywords" content="MCP audit, MCP cleanup, Model Context Protocol, MCP scanner, MCP security audit, MCP context window, Claude Code MCP, Codex MCP, Cursor MCP, Windsurf MCP, VS Code MCP, GitHub Copilot MCP, Cline MCP, Roo Code MCP, MCP config, MCP server cleanup, MCP package upgrades">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://inferensys.github.io/dr-mcp/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="dr-mcp | Clean your MCPs">
+  <meta property="og:description" content="Audit, clean, and analyze your MCP setup before stale servers and context-heavy tools slow down your coding agent.">
+  <meta property="og:url" content="https://inferensys.github.io/dr-mcp/">
+  <meta property="og:image" content="https://inferensys.github.io/dr-mcp/logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="dr-mcp | MCP audit and cleanup">
+  <meta name="twitter:description" content="Clean your MCPs across Claude Code, Codex, Cursor, VS Code, Windsurf, GitHub Copilot, and more.">
+  <meta name="twitter:image" content="https://inferensys.github.io/dr-mcp/logo.png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "dr-mcp",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "macOS, Windows, Linux",
+      "description": "A local-first MCP audit and cleanup tool that scans MCP client configs, scores reliability, security, context hygiene, and maintainability, then generates reversible repair plans.",
+      "softwareVersion": "0.3.0",
+      "url": "https://inferensys.github.io/dr-mcp/",
+      "codeRepository": "https://github.com/Inferensys/dr-mcp",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": [
+        "MCP audit",
+        "MCP cleanup",
+        "Model Context Protocol",
+        "Claude Code",
+        "Codex",
+        "Cursor",
+        "Windsurf",
+        "GitHub Copilot",
+        "VS Code",
+        "MCP security audit",
+        "MCP context hygiene"
+      ]
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is dr-mcp?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "dr-mcp is a local-first MCP audit and cleanup tool. It scans Model Context Protocol configs for coding agents, finds stale, duplicated, risky, abandoned, and context-heavy MCP servers, and creates reversible patch plans."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does dr-mcp delete MCP servers automatically?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Scans are read-only. When a cleanup is possible, dr-mcp generates named patch plans and creates timestamped backups before applying any approved changes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can dr-mcp reduce MCP context window usage?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "dr-mcp ranks MCP servers by estimated tool load and context weight so developers can remove heavy servers from projects that do not need them."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which MCP clients does dr-mcp support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "dr-mcp scans MCP configs for Claude Desktop, Claude Code, Codex, Cursor, Windsurf, GitHub Copilot, VS Code, VS Code Insiders, Cline, Roo Code, Continue, Zed, and project .mcp.json files."
+          }
+        }
+      ]
+    }
+  </script>
   <style>
     :root {
       color-scheme: light;
-      --bg: #f7f8f5;
+      --bg: #f6f7f2;
       --ink: #11140f;
       --muted: #5b6458;
-      --line: #d8ddcf;
+      --line: #d9dece;
       --panel: #ffffff;
-      --accent: #16705a;
-      --accent-2: #c74f32;
-      --accent-3: #1e4e8c;
-      --code: #172019;
       --soft: #edf1e7;
+      --accent: #146c59;
+      --accent-2: #c74f32;
+      --accent-3: #225a92;
+      --accent-4: #8a650f;
+      --code: #141b15;
+      --code-line: rgba(255, 255, 255, 0.09);
+      --shadow: 0 24px 70px rgba(23, 32, 25, 0.13);
     }
 
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -31,12 +121,20 @@
       background: var(--bg);
       color: var(--ink);
       line-height: 1.55;
+      text-rendering: optimizeLegibility;
     }
 
     a {
       color: inherit;
       text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
       text-underline-offset: 4px;
+    }
+
+    code {
+      border-radius: 4px;
+      background: color-mix(in srgb, var(--soft) 82%, white);
+      padding: 2px 5px;
+      font: 0.9em/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
 
     header {
@@ -51,7 +149,7 @@
     .nav,
     .section,
     .hero-inner {
-      width: min(1120px, calc(100% - 40px));
+      width: min(1160px, calc(100% - 40px));
       margin: 0 auto;
     }
 
@@ -69,6 +167,7 @@
       gap: 12px;
       font-weight: 760;
       font-size: 18px;
+      text-decoration: none;
     }
 
     .mark {
@@ -76,9 +175,9 @@
       place-items: center;
       width: 34px;
       height: 34px;
-      border: 1px solid #a7b29f;
+      border: 1px solid #a8b39f;
       border-radius: 8px;
-      background: #e8efe2;
+      background: #e7eee0;
       color: var(--accent);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 17px;
@@ -88,7 +187,7 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 18px;
       color: var(--muted);
       font-size: 14px;
       font-weight: 620;
@@ -103,43 +202,81 @@
 
     .hero-inner {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(420px, 0.84fr);
-      gap: 60px;
+      grid-template-columns: minmax(0, 1fr) minmax(420px, 0.82fr);
+      gap: 58px;
       align-items: center;
-      padding: 58px 0 74px;
+      padding: 56px 0 66px;
     }
 
-    h1 {
-      max-width: 780px;
-      margin: 0;
-      font-size: clamp(52px, 7vw, 94px);
-      line-height: 0.95;
+    .eyebrow {
+      margin: 0 0 16px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 780;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--ink);
       letter-spacing: 0;
     }
 
+    h1 {
+      max-width: 820px;
+      margin: 0;
+      font-size: clamp(46px, 6.2vw, 82px);
+      line-height: 0.98;
+    }
+
     .lead {
-      max-width: 660px;
-      margin: 26px 0 0;
+      max-width: 710px;
+      margin: 24px 0 0;
       color: var(--muted);
       font-size: 20px;
     }
 
+    .hero-points {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 28px 0 0;
+    }
+
+    .hero-point {
+      min-height: 82px;
+      border-top: 2px solid var(--line);
+      padding-top: 12px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .hero-point strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
     .install-copy {
-      margin-top: 34px;
+      margin-top: 32px;
       overflow: hidden;
       border: 1px solid #c7cebe;
       border-radius: 8px;
-      background: #11140f;
+      background: var(--code);
       box-shadow: 0 18px 42px rgba(23, 32, 25, 0.1);
     }
 
-    .install-copy-header {
+    .install-copy-header,
+    .terminal-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       padding: 11px 12px 11px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      border-bottom: 1px solid var(--code-line);
       color: #aeb8aa;
       font: 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
@@ -158,7 +295,7 @@
       padding: 0 10px;
       border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 6px;
-      background: #253327;
+      background: #243126;
       color: #e9f2e3;
       font: 12px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       cursor: pointer;
@@ -169,17 +306,7 @@
       border: 1px solid #c7cebe;
       border-radius: 8px;
       background: var(--code);
-      box-shadow: 0 24px 60px rgba(23, 32, 25, 0.18);
-    }
-
-    .terminal-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      color: #aeb8aa;
-      font: 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      box-shadow: var(--shadow);
     }
 
     .dots {
@@ -207,7 +334,7 @@
       margin: 0;
       padding: 24px;
       color: #d7e4d1;
-      font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font: 13px/1.68 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       white-space: pre-wrap;
     }
 
@@ -219,8 +346,16 @@
       color: #ff8f75;
     }
 
+    .warn {
+      color: #ffd16b;
+    }
+
     .ok {
       color: #80d69b;
+    }
+
+    .blue {
+      color: #8fc5ff;
     }
 
     .muted-code {
@@ -238,110 +373,271 @@
       padding: 72px 0;
     }
 
+    .section + .section {
+      border-top: 1px solid var(--line);
+    }
+
     .section h2 {
-      max-width: 760px;
+      max-width: 820px;
       margin: 0;
-      font-size: clamp(34px, 4.8vw, 58px);
-      line-height: 1.02;
-      letter-spacing: 0;
+      font-size: clamp(32px, 4.5vw, 56px);
+      line-height: 1.04;
+    }
+
+    .section h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.2;
     }
 
     .section p {
-      max-width: 740px;
+      max-width: 760px;
       color: var(--muted);
       font-size: 18px;
     }
 
-    .tool-grid {
+    .section-intro {
+      margin: 18px 0 0;
+    }
+
+    .answer {
+      display: grid;
+      grid-template-columns: 0.78fr 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    .answer-box {
+      border-left: 4px solid var(--accent);
+      padding: 6px 0 6px 22px;
+    }
+
+    .answer-box p {
+      margin-top: 0;
+      font-size: 21px;
+    }
+
+    .metrics {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .metric {
+      min-height: 116px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.68);
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--accent);
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .plain-list,
+    .signal-list {
+      display: grid;
+      gap: 12px;
+      margin: 32px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .plain-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .plain-list li,
+    .signal-list li {
+      padding: 17px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .plain-list strong,
+    .signal-list strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+
+    .feature-grid,
+    .workflow,
+    .checks,
+    .tool-grid,
+    .faq-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 36px;
+    }
+
+    .feature-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .feature,
+    .step,
+    .check,
+    .faq-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 22px;
+    }
+
+    .feature {
+      min-height: 230px;
+      border-top: 3px solid var(--accent);
+    }
+
+    .feature:nth-child(2),
+    .feature:nth-child(5) {
+      border-top-color: var(--accent-2);
+    }
+
+    .feature:nth-child(3),
+    .feature:nth-child(6) {
+      border-top-color: var(--accent-3);
+    }
+
+    .feature:nth-child(4) {
+      border-top-color: var(--accent-4);
+    }
+
+    .feature p,
+    .check p,
+    .faq-item p,
+    .step p {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .workflow {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      counter-reset: step;
+    }
+
+    .step {
+      min-height: 210px;
+      position: relative;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      margin-bottom: 18px;
+      border-radius: 8px;
+      background: #e8efe2;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .signal-table {
+      width: 100%;
+      margin-top: 34px;
+      border-collapse: collapse;
+      border-top: 1px solid var(--line);
+      font-size: 15px;
+    }
+
+    .signal-table th,
+    .signal-table td {
+      padding: 16px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .signal-table th {
+      color: var(--ink);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .signal-table td {
+      color: var(--muted);
+    }
+
+    .signal-table td:first-child {
+      color: var(--ink);
+      font-weight: 720;
+    }
+
+    .checks {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .check {
+      min-height: 184px;
+      border-left: 4px solid var(--accent);
+    }
+
+    .check:nth-child(2) {
+      border-left-color: var(--accent-2);
+    }
+
+    .check:nth-child(3) {
+      border-left-color: var(--accent-3);
+    }
+
+    .tool-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 32px;
     }
 
     .tool {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      min-height: 56px;
+      min-height: 58px;
+      gap: 12px;
       padding: 0 14px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.66);
+      background: rgba(255, 255, 255, 0.68);
       font-weight: 700;
     }
 
     .tool span {
+      flex: 0 0 auto;
       color: var(--accent);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 13px;
     }
 
-    .checks {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-      margin-top: 36px;
-    }
-
-    .check {
-      min-height: 190px;
-      padding: 22px;
-      border-top: 3px solid var(--accent);
-      background: var(--panel);
-    }
-
-    .check:nth-child(2) {
-      border-color: var(--accent-2);
-    }
-
-    .check:nth-child(3) {
-      border-color: var(--accent-3);
-    }
-
-    .check h3 {
-      margin: 0 0 12px;
-      font-size: 20px;
-    }
-
-    .check p {
-      margin: 0;
-      font-size: 16px;
-    }
-
     .install {
       display: grid;
-      grid-template-columns: 0.8fr 1fr;
+      grid-template-columns: 0.78fr 1fr;
       gap: 34px;
       align-items: start;
       margin-top: 32px;
     }
 
     .install pre {
+      overflow-x: auto;
       border-radius: 8px;
       background: #11140f;
     }
 
-    .plain-list {
-      display: grid;
+    .faq-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 32px;
-      padding: 0;
-      list-style: none;
-    }
-
-    .plain-list li {
-      padding: 16px 0;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 17px;
-    }
-
-    .plain-list strong {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--ink);
     }
 
     footer {
@@ -356,9 +652,30 @@
       justify-content: space-between;
       gap: 20px;
       padding: 0;
+      border-top: 0;
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 980px) {
+      .hero-inner,
+      .answer,
+      .install {
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+
+      .workflow,
+      .feature-grid,
+      .checks {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .tool-grid,
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
       .nav-links {
         display: none;
       }
@@ -367,24 +684,64 @@
         min-height: auto;
       }
 
-      .hero-inner,
-      .install {
+      .hero-inner {
+        padding-top: 44px;
+      }
+
+      .hero-points,
+      .workflow,
+      .feature-grid,
+      .checks,
+      .plain-list,
+      .tool-grid,
+      .metrics,
+      .faq-grid {
         grid-template-columns: 1fr;
-        gap: 34px;
       }
 
       .terminal {
         max-width: 100%;
       }
 
-      .tool-grid,
-      .checks,
-      .plain-list {
-        grid-template-columns: 1fr;
+      h1 {
+        font-size: clamp(42px, 13vw, 62px);
       }
 
-      h1 {
-        font-size: clamp(48px, 16vw, 70px);
+      .lead {
+        font-size: 18px;
+      }
+
+      .signal-table,
+      .signal-table tbody,
+      .signal-table tr,
+      .signal-table th,
+      .signal-table td {
+        display: block;
+      }
+
+      .signal-table thead {
+        display: none;
+      }
+
+      .signal-table tr {
+        border-bottom: 1px solid var(--line);
+        padding: 12px 0;
+      }
+
+      .signal-table td {
+        border-bottom: 0;
+        padding: 6px 0;
+      }
+
+      .signal-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 2px;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 760;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
       }
 
       footer .section {
@@ -401,8 +758,9 @@
         <span>dr-mcp</span>
       </a>
       <div class="nav-links">
-        <a href="#why">Cleanup</a>
-        <a href="#catches">Finds</a>
+        <a href="#what">What</a>
+        <a href="#audit">Audit</a>
+        <a href="#signals">Signals</a>
         <a href="#install">Install</a>
         <a href="https://github.com/Inferensys/dr-mcp">GitHub</a>
       </div>
@@ -413,22 +771,45 @@
     <section class="hero">
       <div class="hero-inner">
         <div>
-          <h1>Clean your MCPs.</h1>
-          <p class="lead">Audit, clean, and slim down the MCP setup your coding agent loads every day. Find forgotten servers, abandoned packages, duplicate tools, broad filesystem access, and context-heavy MCPs before they waste context or trigger unwanted tool calls.</p>
+          <p class="eyebrow">Local-first MCP audit and cleanup</p>
+          <h1>dr-mcp cleans the MCP servers your coding agent loads every day.</h1>
+          <p class="lead">Scan Claude Code, Codex, Cursor, VS Code, Windsurf, GitHub Copilot, Cline, Roo Code, Continue, Zed, and project <code>.mcp.json</code> files. Find stale servers, abandoned packages, unused installs, context-heavy tools, risky permissions, and major upgrades before they waste context or trigger unwanted tool calls.</p>
+
+          <div class="hero-points" aria-label="Product highlights">
+            <div class="hero-point">
+              <strong>Audit</strong>
+              One report for global and project MCP configs.
+            </div>
+            <div class="hero-point">
+              <strong>Analyze</strong>
+              Context weight, tool count, version drift, and maintenance risk.
+            </div>
+            <div class="hero-point">
+              <strong>Clean</strong>
+              Reversible patch plans with backups. No silent deletes.
+            </div>
+          </div>
+
           <div class="install-copy" aria-label="Install command">
             <div class="install-copy-header">
-              <span>One command local scan</span>
-              <button class="copy-button" type="button" data-copy="npx @inferensys/dr-mcp">Copy</button>
+              <span>Copy the first scan</span>
+              <button class="copy-button" type="button" data-copy="npx @inferensys/dr-mcp cleanup">Copy</button>
             </div>
-            <pre class="copy-command">npx @inferensys/dr-mcp</pre>
+            <pre class="copy-command">npx @inferensys/dr-mcp cleanup</pre>
           </div>
         </div>
+
         <div class="terminal" aria-label="dr-mcp report preview">
           <div class="terminal-bar">
             <div class="dots"><span></span><span></span><span></span></div>
-            <span>dr-mcp cleanup</span>
+            <span>dr-mcp cleanup --registry --track-usage</span>
           </div>
-          <pre><span class="ok">MCP cleanup report</span>
+          <pre><span class="ok">MCP health report</span>        <span class="score">74/100</span>
+
+Configs found: 9
+Enabled servers: 18
+Estimated loaded tools: <span class="warn">171</span>
+Context risk: <span class="high">high</span>
 
 Context space
 github        <span class="bar">████████████</span> 80 tools
@@ -436,43 +817,195 @@ browser       <span class="bar">█████░░░░░░░</span> 25 t
 slack         <span class="bar">████░░░░░░░░</span> 20 tools
 postgres      <span class="bar">██░░░░░░░░░░</span> 10 tools
 
-Major upgrades
-github-mcp    0.8.1 -> 1.4.0
-browser-mcp   1.2.0 -> 2.0.3
+Abandoned / quiet
+<span class="high">remove?</span> old-docs-mcp    archived repo
+<span class="warn">review</span>  linear-helper   no push in 421 days
 
-Unmaintained
-<span class="high">ditch</span>  old-docs-mcp      archived repo
-<span class="high">ditch</span>  linear-helper     no push in 421 days
+Unused / long-lived
+<span class="warn">review</span>  figma-mcp       seen 7 scans, 93 days
+<span class="warn">review</span>  browser        heavy for this repo
 
-Unused / forgotten
-review figma-mcp        seen 7 scans, 93 days
-review browser          heavy for this repo
+Upgrade drift
+<span class="blue">major</span>   github-mcp     0.8.1 -> 1.4.0
+<span class="blue">major</span>   browser-mcp    1.2.0 -> 2.0.3
 
-Patch plans:
+Patch plans
   upgrade-stale-packages
   remove-abandoned-servers
   remove-long-lived-servers
   remove-heavy-context-servers
 
-<span class="muted-code">No config changes until you apply a plan.</span></pre>
+<span class="muted-code">Scan is read-only. Apply plans only after review.</span></pre>
         </div>
       </div>
     </section>
 
-    <section class="section" id="why">
-      <h2>Your agent loads the junk drawer too.</h2>
-      <p>One project needs GitHub and Postgres. Another needs Playwright. A third needs a docs server. After a few weeks, your MCP configs look like an old startup disk: useful tools mixed with trial installs, duplicates, stale packages, and permissions you would not add today.</p>
+    <section class="section" id="what">
+      <div class="answer">
+        <div>
+          <p class="eyebrow">What is dr-mcp?</p>
+          <h2>An MCP scanner for clean, fast, predictable agent sessions.</h2>
+        </div>
+        <div class="answer-box">
+          <p>dr-mcp is a local-first Model Context Protocol audit tool. It reads your MCP client configs, normalizes every server into one report, scores the setup, explains the risks, and creates safe cleanup plans you can apply after review.</p>
+          <p>It is built for developers and teams who use agentic coding every day and do not want stale MCP servers, broad permissions, duplicate tools, or oversized context windows quietly following them from project to project.</p>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <strong>4</strong>
+          <span>Score categories: reliability, security, context hygiene, maintainability.</span>
+        </div>
+        <div class="metric">
+          <strong>13+</strong>
+          <span>MCP client targets across Claude, Codex, Cursor, VS Code, Windsurf, and more.</span>
+        </div>
+        <div class="metric">
+          <strong>0</strong>
+          <span>Config writes during scan. Cleanup only happens through explicit patch plans.</span>
+        </div>
+        <div class="metric">
+          <strong>1</strong>
+          <span>Shareable Markdown, HTML, or JSON report for the whole MCP setup.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="audit">
+      <p class="eyebrow">Audit, clean, analyze</p>
+      <h2>The problems dr-mcp looks for before they become agent friction.</h2>
+      <p class="section-intro">MCP cleanup is not only about deleting old entries. It is configuration hygiene for tool-calling agents: fewer irrelevant tools, cleaner permissions, better package freshness, and less context-window pressure.</p>
+      <div class="feature-grid">
+        <article class="feature">
+          <h3>Abandoned MCP packages</h3>
+          <p>Checks npm metadata and GitHub repository activity so archived, missing, quiet, or likely abandoned MCP packages are visible before you keep relying on them.</p>
+        </article>
+        <article class="feature">
+          <h3>Unused and forgotten installs</h3>
+          <p>Optional local install-history tracking highlights MCP servers that keep showing up across scans. It helps you decide what still belongs in a daily coding setup.</p>
+        </article>
+        <article class="feature">
+          <h3>Context-heavy servers</h3>
+          <p>Ranks MCPs by estimated tool cardinality, so high-surface servers such as GitHub, browser automation, Slack, Jira, and filesystem tools do not load everywhere by habit.</p>
+        </article>
+        <article class="feature">
+          <h3>Major upgrades pending</h3>
+          <p>Compares pinned package versions against npm <code>dist-tags.latest</code>, classifies semantic version drift, and separates major upgrades from minor or patch updates.</p>
+        </article>
+        <article class="feature">
+          <h3>Risky permissions and secrets</h3>
+          <p>Flags broad filesystem access, inline secret-looking values, token-shaped command args, broken environment references, and configs that should move secrets out of plain text.</p>
+        </article>
+        <article class="feature">
+          <h3>Broken launch paths</h3>
+          <p>Finds missing commands, dead local paths, unsupported transports, invalid config syntax, duplicate server names, and package entries stuck on <code>latest</code> or no version.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="workflow">
+      <p class="eyebrow">How the scan works</p>
+      <h2>A simple pipeline for MCP configuration hygiene.</h2>
+      <div class="workflow">
+        <article class="step">
+          <h3>Discover</h3>
+          <p>Walk known global and project config paths for Claude, Codex, Cursor, VS Code, Windsurf, Copilot, Cline, Roo Code, Continue, Zed, and plain MCP files.</p>
+        </article>
+        <article class="step">
+          <h3>Parse</h3>
+          <p>Read JSON, JSONC-style settings, TOML, and YAML where each client stores MCP server definitions.</p>
+        </article>
+        <article class="step">
+          <h3>Normalize</h3>
+          <p>Map <code>mcpServers</code>, <code>servers</code>, <code>context_servers</code>, command args, transports, env, URLs, and package refs into one internal server model.</p>
+        </article>
+        <article class="step">
+          <h3>Score</h3>
+          <p>Run static diagnostics, package freshness checks, repository maintenance heuristics, context-weight estimates, and redaction passes.</p>
+        </article>
+        <article class="step">
+          <h3>Plan</h3>
+          <p>Generate explicit patch plans with JSON Pointer targets, idempotent operations, timestamped backups, and diffs before anything changes.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="signals">
+      <p class="eyebrow">Technical signals</p>
+      <h2>Readable for humans, specific enough for technical review.</h2>
+      <p class="section-intro">The report uses practical static analysis and dependency metadata instead of vague cleanup language. A developer can see what was checked, why it matters, and what action is being proposed.</p>
+      <table class="signal-table">
+        <thead>
+          <tr>
+            <th>Signal</th>
+            <th>Method</th>
+            <th>Why it matters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Signal">Context weight</td>
+            <td data-label="Method">Tool cardinality estimation and server-category heuristics</td>
+            <td data-label="Why it matters">Large MCP tool surfaces can add selection noise and push useful project context out of the prompt.</td>
+          </tr>
+          <tr>
+            <td data-label="Signal">Version drift</td>
+            <td data-label="Method">Semver classification against npm <code>dist-tags.latest</code></td>
+            <td data-label="Why it matters">Old MCP packages may miss security fixes, protocol changes, or compatibility updates.</td>
+          </tr>
+          <tr>
+            <td data-label="Signal">Maintenance risk</td>
+            <td data-label="Method">GitHub archive status, <code>pushed_at</code> recency, missing package metadata, and repository activity buckets</td>
+            <td data-label="Why it matters">Archived and abandoned MCPs are more likely to break as clients, SDKs, and APIs change.</td>
+          </tr>
+          <tr>
+            <td data-label="Signal">Security hygiene</td>
+            <td data-label="Method">Secret-key pattern detection, token-shaped value checks, env reference validation, and broad filesystem path checks</td>
+            <td data-label="Why it matters">MCP configs often sit in plain files. Secrets and broad local access should be intentional, not accidental.</td>
+          </tr>
+          <tr>
+            <td data-label="Signal">Config reliability</td>
+            <td data-label="Method">Parser diagnostics, PATH checks, local file existence checks, transport validation, and duplicate-name detection</td>
+            <td data-label="Why it matters">Broken MCP entries waste startup time and create hard-to-debug client behavior.</td>
+          </tr>
+          <tr>
+            <td data-label="Signal">Patch safety</td>
+            <td data-label="Method">Explicit operations, diff output, backups, idempotence, and no auto-install or uninstall in v1</td>
+            <td data-label="Why it matters">Cleanup should be reviewable. The tool should not make hidden package or config decisions for you.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" id="cleanup">
+      <p class="eyebrow">What cleanup can mean</p>
+      <h2>Not every finding should be deleted. dr-mcp separates review from repair.</h2>
+      <div class="checks">
+        <article class="check">
+          <h3>Safe repair plans</h3>
+          <p>Remove duplicate servers, dead entries, abandoned packages, heavy context servers, or long-lived review candidates only after a named plan is selected.</p>
+        </article>
+        <article class="check">
+          <h3>Upgrade proposals</h3>
+          <p>Generate package update plans for stale MCP refs, including major upgrades that should be reviewed before applying.</p>
+        </article>
+        <article class="check">
+          <h3>Redacted reporting</h3>
+          <p>Export Markdown, HTML, or JSON reports with home paths, emails, tokens, secrets, and private GitHub repo URLs redacted by default.</p>
+        </article>
+      </div>
       <ul class="plain-list">
-        <li><strong>Audit the whole machine.</strong> Claude, Codex, Cursor, Windsurf, Copilot, VS Code, Cline, Roo Code, Continue, Zed, and project `.mcp.json` files.</li>
-        <li><strong>Clean obvious clutter.</strong> Duplicate servers, dead commands, missing paths, archived repos, major upgrades, and packages stuck on `latest`.</li>
-        <li><strong>Reclaim context.</strong> Rank servers by estimated tool count so heavy MCPs stay out of projects that do not need them.</li>
-        <li><strong>Find old installs.</strong> `--track-usage` builds a local ledger of MCPs that keep hanging around scan after scan.</li>
+        <li><strong>For solo developers</strong> Keep per-project MCP setups small enough for fast, focused agent sessions.</li>
+        <li><strong>For teams</strong> Review MCP permissions and package freshness before a shared config spreads across repos.</li>
+        <li><strong>For security reviews</strong> Find broad filesystem mounts, inline tokens, and broken env references in one report.</li>
+        <li><strong>For agent reliability</strong> Reduce duplicate tools, dead launch commands, and stale packages that create avoidable tool-call failures.</li>
       </ul>
     </section>
 
     <section class="section" id="coverage">
-      <h2>Scans the configs agentic coders actually collect.</h2>
-      <p>dr-mcp puts your global Claude setup, Codex TOML, Cursor project config, VS Code settings, and random <code>.mcp.json</code> files into one cleanup report.</p>
+      <p class="eyebrow">Supported clients</p>
+      <h2>Scans the MCP configs agentic coders actually collect.</h2>
+      <p class="section-intro">dr-mcp covers global and project-level config files across the major coding agents, editors, and MCP-compatible developer tools.</p>
       <div class="tool-grid">
         <div class="tool">Claude Desktop <span>json</span></div>
         <div class="tool">Claude Code / cc <span>json</span></div>
@@ -489,46 +1022,67 @@ Patch plans:
       </div>
     </section>
 
-    <section class="section" id="catches">
-      <h2>What it finds before your agent trips over it.</h2>
-      <div class="checks">
-        <article class="check">
-          <h3>Abandoned servers</h3>
-          <p>Checks npm metadata and GitHub activity so archived or quiet MCP projects are easy to remove.</p>
-        </article>
-        <article class="check">
-          <h3>Context hogs</h3>
-          <p>Ranks heavy servers like GitHub, browser automation, Slack, Jira, and filesystem tools by estimated tool load.</p>
-        </article>
-        <article class="check">
-          <h3>Upgrade debt</h3>
-          <p>Shows MCP packages behind npm latest, including major upgrades that deserve a careful review before applying.</p>
-        </article>
-      </div>
-    </section>
-
     <section class="section" id="install">
+      <p class="eyebrow">Install</p>
       <h2>Start with one scan. Delete nothing until you approve it.</h2>
       <div class="install">
-        <p>The first command gives you a redacted local cleanup report. <code>cleanup</code> adds package checks, abandoned repo signals, major upgrade checks, and local install-history tracking. If you want changes, dr-mcp creates named patch plans with backups.</p>
-        <pre># CLI
-npx @inferensys/dr-mcp
+        <div>
+          <p>The first command gives you a redacted cleanup report. Add <code>--registry</code> for package freshness and repository maintenance checks. Add <code>--track-usage</code> when you want local install-history signals for long-lived MCPs.</p>
+          <p>Run it as a CLI when you want a quick report, or add it as an MCP server when you want <code>dr_mcp_scan</code> and <code>dr_mcp_cleanup</code> inside Claude Code, Codex, Cursor, Windsurf, VS Code, GitHub Copilot, or another MCP client.</p>
+        </div>
+        <pre># Quick local cleanup scan
 npx @inferensys/dr-mcp cleanup
-npx @inferensys/dr-mcp report --format html
 
-# Codex / Claude Code MCP server
+# JSON for scripts, audits, or CI
+npx @inferensys/dr-mcp scan --workspace . --json --registry
+
+# Shareable report
+npx @inferensys/dr-mcp report --workspace . --format html &gt; dr-mcp-report.html
+
+# Run as an MCP server
 npx @inferensys/dr-mcp server
 
-codex mcp add dr-mcp -- \
-  npx -y @inferensys/dr-mcp server
+# Add to Codex
+codex mcp add dr-mcp -- npx -y @inferensys/dr-mcp server
 
-claude mcp add dr-mcp -- \
-  npx -y @inferensys/dr-mcp server
+# Add to Claude Code
+claude mcp add dr-mcp -- npx -y @inferensys/dr-mcp server
 
 # In your agent session
 dr_mcp_scan
 dr_mcp_cleanup
 /dr-mcp scan</pre>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <p class="eyebrow">FAQ</p>
+      <h2>Common questions about MCP cleanup.</h2>
+      <div class="faq-grid">
+        <article class="faq-item">
+          <h3>Is dr-mcp safe to run?</h3>
+          <p>Yes. A scan is read-only and local-first. dr-mcp only writes when you explicitly apply a patch plan, and patch application creates timestamped backups.</p>
+        </article>
+        <article class="faq-item">
+          <h3>Does dr-mcp delete MCP servers automatically?</h3>
+          <p>No. It shows cleanup candidates and produces named plans. You choose whether to apply a plan after reviewing the exact operations.</p>
+        </article>
+        <article class="faq-item">
+          <h3>Can it find abandoned MCP servers?</h3>
+          <p>Yes, when registry checks are enabled. dr-mcp checks package metadata and GitHub repository activity for archived, missing, quiet, or abandoned MCP packages.</p>
+        </article>
+        <article class="faq-item">
+          <h3>Can it reduce context window pressure?</h3>
+          <p>It identifies MCP servers with heavy estimated tool loads. That gives you a practical list of candidates to remove from projects where those tools are not needed.</p>
+        </article>
+        <article class="faq-item">
+          <h3>Does it require internet access?</h3>
+          <p>No for local config scans. Internet access is only needed when you enable registry checks for npm latest versions, package metadata, official registry matching, and repository activity.</p>
+        </article>
+        <article class="faq-item">
+          <h3>Who is dr-mcp for?</h3>
+          <p>Developers, staff engineers, platform teams, and CTOs who use coding agents daily and want MCP setups that are fast, reviewable, and easy to maintain across projects.</p>
+        </article>
       </div>
     </section>
   </main>

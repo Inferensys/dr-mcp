@@ -1,7 +1,7 @@
 {
   "name": "@inferensys/dr-mcp",
   "version": "0.3.0",
-  "description": "Clean your MCP setup with config audits, context-weight analysis, abandoned-package checks, usage history, and safe patch plans.",
+  "description": "Clean your MCPs with config audits, context-weight analysis, abandoned-package checks, upgrade plans, usage history, and safe patch plans.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -39,9 +39,20 @@
     "continue",
     "zed",
     "dr-mcp",
+    "mcp-cleanup",
+    "mcp-scanner",
     "mcp-audit",
+    "mcp-config",
+    "mcp-tools",
+    "mcp-cleaner",
+    "model-context-protocol-audit",
+    "agentic-coding",
+    "coding-agents",
+    "context-window",
     "context-hygiene",
-    "security-audit"
+    "security-audit",
+    "package-upgrades",
+    "abandoned-packages"
   ],
   "license": "MIT",
   "dependencies": {

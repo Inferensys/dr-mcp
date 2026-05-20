@@ -2,25 +2,38 @@
 
 Clean your MCPs.
 
-Audit, clean, and slim down the MCP setup your coding agent loads every day.
+dr-mcp is a local-first MCP audit and cleanup tool for developers who use agentic coding every day. It scans the Model Context Protocol configs your tools load, finds stale servers, abandoned packages, duplicate entries, context-heavy tools, risky permissions, and major upgrades, then generates reversible patch plans.
 
-If you use Claude Code, Codex, Cursor, Windsurf, Copilot, or VS Code across different projects, your MCP configs collect junk fast: old demo servers, duplicate GitHub tools, broad filesystem access, packages nobody maintains, and giant tool lists your agent has to sort through before it can write code.
+If you use Claude Code, OpenAI Codex, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, or Zed across multiple projects, your MCP setup can grow quietly: old demo servers, duplicate GitHub tools, broad filesystem access, package pins behind npm latest, abandoned repositories, and large tool surfaces your agent has to consider before it writes code.
 
-dr-mcp scans that mess and shows what to remove.
-
-```bash
-npx @inferensys/dr-mcp
-```
-
-That starts a local scan in the current project. It does not delete anything. You get a cleanup report, a ranked list of context-heavy MCPs, and reversible patch plans you can apply after review.
-
-For the full cleanup scan with package/repo checks and local install-history tracking:
+dr-mcp shows what to clean up without deleting anything during scan.
 
 ```bash
 npx @inferensys/dr-mcp cleanup
 ```
 
+That starts a local cleanup scan in the current project. You get a redacted report, a ranked list of context-heavy MCPs, package and repository freshness signals, and patch plans you can apply after review.
+
+For the full cleanup scan with package/repo checks and local install-history tracking:
+
+```bash
+npx @inferensys/dr-mcp cleanup --registry --track-usage
+```
+
 Inside Claude Code, Codex, Cursor, Windsurf, GitHub Copilot, or any MCP client that exposes server prompts/tools, use `dr_mcp_scan` or `dr_mcp_cleanup`. If your client maps MCP prompts into slash commands, use `/dr-mcp scan`.
+
+## Why Clean Your MCPs?
+
+MCP servers are powerful because they put tools directly into an agent's loop. That also means every extra server can add tool-selection noise, context-window pressure, startup failures, stale dependencies, or permissions you no longer intend to grant.
+
+dr-mcp helps with:
+
+- **MCP audit:** one report across global and project MCP configs.
+- **MCP cleanup:** review candidates for duplicates, dead entries, abandoned packages, long-lived installs, and heavy tool surfaces.
+- **MCP context hygiene:** estimated tool counts and context weight for servers that do not belong in every coding session.
+- **MCP security review:** broad filesystem access, inline secrets, secret-looking args, and broken environment references.
+- **MCP upgrade planning:** semver drift against npm latest, including major upgrades that deserve review.
+- **MCP repair plans:** explicit operations with backups and diffs before writing.
 
 ## What It Helps You Fix
 
@@ -32,6 +45,18 @@ Inside Claude Code, Codex, Cursor, Windsurf, GitHub Copilot, or any MCP client t
 - **Remove duplicates.** Spot the same MCP registered in Claude, Cursor, VS Code, Codex, Windsurf, or project files.
 - **Fix risky configs.** Flag broad filesystem access, inline secrets, secret-looking args, missing commands, dead paths, and broken env refs.
 - **Stop floating installs.** Catch `npx` packages using `latest` or no version.
+
+## How The Audit Works
+
+dr-mcp uses practical static analysis and package metadata checks:
+
+1. **Discover config files** for Claude Desktop, Claude Code, Codex, Cursor, Windsurf, GitHub Copilot, VS Code, Cline, Roo Code, Continue, Zed, and `.mcp.json`.
+2. **Parse and normalize** JSON, TOML, and YAML config shapes into one internal MCP server model.
+3. **Score the setup** across reliability, security, context hygiene, and maintainability.
+4. **Check package freshness** with npm metadata, semver classification, `dist-tags.latest`, and optional official registry matching.
+5. **Estimate context weight** with tool-cardinality heuristics for high-surface MCPs such as GitHub, browser automation, Slack, Jira, filesystem, and databases.
+6. **Review maintenance signals** from GitHub archive status and recent push activity when repository metadata is available.
+7. **Generate patch plans** with JSON Pointer targets, idempotent operations, timestamped backups, and diffs.
 
 ## Commands
 
@@ -73,6 +98,17 @@ npx @inferensys/dr-mcp server
 - **Install history:** long-lived servers from the local usage ledger.
 - **Findings:** concrete issues with source config paths.
 - **Patch plans:** safe edits such as removing duplicates, dead entries, abandoned servers, or context-heavy servers.
+
+## Cleanup Plans
+
+dr-mcp separates findings from action. A finding tells you what looks wrong; a patch plan tells you the exact config edit it can make.
+
+- `remove-duplicate-servers`: remove duplicate MCP server entries while keeping the first enabled definition.
+- `remove-dead-servers`: remove entries that cannot launch or packages missing from npm.
+- `upgrade-stale-packages`: update MCP package refs to npm latest.
+- `remove-abandoned-servers`: remove servers from archived or abandoned repositories.
+- `remove-heavy-context-servers`: remove servers estimated to load many tools into every session.
+- `remove-long-lived-servers`: remove servers that have stayed installed across multiple tracked scans after you confirm they are no longer useful.
 
 ## Supported Tools
 
